@@ -1,0 +1,3 @@
+package com.medicalinventory.medical_inventory_backend.user;
+import com.medicalinventory.medical_inventory_backend.auth.AuthController.UserView; import com.medicalinventory.medical_inventory_backend.repository.UserRepository; import org.springframework.security.core.Authentication; import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/users") public class UserController { private final UserRepository users; public UserController(UserRepository users){this.users=users;} @GetMapping("/me") public UserView me(Authentication auth){var u=users.findByEmail(auth.getName()).orElseThrow();return new UserView(u.getId(),u.getName(),u.getEmail(),u.getRoles().stream().map(r->r.getName().name()).collect(java.util.stream.Collectors.toSet()));}}

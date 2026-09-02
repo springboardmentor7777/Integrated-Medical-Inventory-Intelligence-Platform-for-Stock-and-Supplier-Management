@@ -1,0 +1,3 @@
+package com.medicalinventory.medical_inventory_backend.common;
+import org.springframework.http.*; import org.springframework.web.bind.annotation.*; import java.util.Map;
+@RestControllerAdvice public class ApiExceptionHandler { @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class) ResponseEntity<?> validation(org.springframework.web.bind.MethodArgumentNotValidException e){return ResponseEntity.badRequest().body(Map.of("message","Validation failed","errors",e.getBindingResult().getFieldErrors().stream().collect(java.util.stream.Collectors.toMap(f->f.getField(),f->f.getDefaultMessage(),(a,b)->a))));}}
