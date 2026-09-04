@@ -502,12 +502,18 @@ const delay = (ms = 150) => new Promise(res => setTimeout(res, ms));
 // ==========================================
 export const AuthService = {
   login: async (email, password) => {
-    await delay();
     try {
       const res = await api.post('/auth/login', { email, password });
-      return res.data;
+      const token = res.data.token;
+      const user = res.data.user;
+      localStorage.setItem('medistock_token', token);
+      localStorage.setItem('token', token);
+      localStorage.setItem('medistock_user', JSON.stringify(user));
+      localStorage.setItem('user', JSON.stringify(user));
+      AuthService.logAudit('USER_LOGIN', user.name, user.role, 'User signed in via REST API', 'SUCCESS');
+      return { token, user };
     } catch (err) {
-      // Standalone interactive mock
+      // Standalone interactive mock fallback
       const users = getStorage('medistock_users_db', INITIAL_USERS);
       const matched = users.find(u => u.email.toLowerCase() === email.toLowerCase());
       
@@ -533,6 +539,11 @@ export const AuthService = {
       const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + 
         btoa(JSON.stringify(mockJwtPayload)) + '.' + 
         btoa('signature_demo_' + Date.now());
+
+      localStorage.setItem('medistock_token', mockToken);
+      localStorage.setItem('token', mockToken);
+      localStorage.setItem('medistock_user', JSON.stringify(userObj));
+      localStorage.setItem('user', JSON.stringify(userObj));
 
       AuthService.logAudit('USER_LOGIN', userObj.name, userObj.role, 'User signed in successfully', 'SUCCESS');
 
@@ -567,32 +578,50 @@ export const AuthService = {
       btoa(JSON.stringify(mockJwtPayload)) + '.' + 
       btoa('sso_signature_' + Date.now());
 
+    localStorage.setItem('medistock_token', mockToken);
+    localStorage.setItem('token', mockToken);
+    localStorage.setItem('medistock_user', JSON.stringify(userObj));
+
     AuthService.logAudit('OAUTH2_LOGIN', userObj.name, userObj.role, `Authenticated via ${provider} SSO`, 'SUCCESS');
     return { token: mockToken, user: userObj };
   },
 
   register: async (userData) => {
-    await delay();
-    const users = getStorage('medistock_users_db', INITIAL_USERS);
-    const newUser = {
-      id: Date.now(),
-      name: userData.name,
-      email: userData.email,
-      role: userData.role || 'PHARMACIST',
-      department: userData.department || 'General Medicine',
-      phone: userData.phone || '+1 555-0000',
-      licenseNumber: userData.licenseNumber || 'LIC-' + Math.floor(Math.random() * 100000),
-      status: 'ACTIVE',
-      lastLogin: 'Just now',
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-    users.unshift(newUser);
-    setStorage('medistock_users_db', users);
+    try {
+      const res = await api.post('/auth/register', userData);
+      const token = res.data.token;
+      const user = res.data.user;
+      localStorage.setItem('medistock_token', token);
+      localStorage.setItem('token', token);
+      localStorage.setItem('medistock_user', JSON.stringify(user));
+      AuthService.logAudit('USER_REGISTER', user.name, user.role, 'New account registered via API', 'SUCCESS');
+      return { token, user };
+    } catch (err) {
+      await delay();
+      const users = getStorage('medistock_users_db', INITIAL_USERS);
+      const newUser = {
+        id: Date.now(),
+        name: userData.name,
+        email: userData.email,
+        role: userData.role || 'PHARMACIST',
+        department: userData.department || 'General Medicine',
+        phone: userData.phone || '+1 555-0000',
+        licenseNumber: userData.licenseNumber || 'LIC-' + Math.floor(Math.random() * 100000),
+        status: 'ACTIVE',
+        lastLogin: 'Just now',
+        createdAt: new Date().toISOString().split('T')[0]
+      };
+      users.unshift(newUser);
+      setStorage('medistock_users_db', users);
 
-    const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + btoa(JSON.stringify(newUser)) + '.' + btoa('new_user_sig');
-    AuthService.logAudit('USER_REGISTER', newUser.name, newUser.role, 'New account registered', 'SUCCESS');
+      const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + btoa(JSON.stringify(newUser)) + '.' + btoa('new_user_sig');
+      localStorage.setItem('medistock_token', mockToken);
+      localStorage.setItem('token', mockToken);
+      localStorage.setItem('medistock_user', JSON.stringify(newUser));
+      AuthService.logAudit('USER_REGISTER', newUser.name, newUser.role, 'New account registered', 'SUCCESS');
 
-    return { token: mockToken, user: newUser };
+      return { token: mockToken, user: newUser };
+    }
   },
 
   resetPasswordRequest: async (email) => {
@@ -604,30 +633,44 @@ export const AuthService = {
   },
 
   updateProfile: async (data) => {
-    await delay();
-    const existingUserStr = localStorage.getItem('medistock_user');
-    const existingUser = existingUserStr ? JSON.parse(existingUserStr) : {};
-    const updatedUser = { ...existingUser, ...data };
-    
-    // Also update users DB
-    const users = getStorage('medistock_users_db', INITIAL_USERS);
-    const idx = users.findIndex(u => u.email === updatedUser.email || u.id === updatedUser.id);
-    if (idx !== -1) {
-      users[idx] = { ...users[idx], ...updatedUser };
-      setStorage('medistock_users_db', users);
-    }
+    try {
+      const res = await api.put('/users/me', data);
+      const updatedUser = res.data;
+      localStorage.setItem('medistock_user', JSON.stringify(updatedUser));
+      AuthService.logAudit('PROFILE_UPDATE', updatedUser.name, updatedUser.role, 'Updated profile via API', 'SUCCESS');
+      return { success: true, user: updatedUser, message: 'Profile updated successfully' };
+    } catch (err) {
+      await delay();
+      const existingUserStr = localStorage.getItem('medistock_user');
+      const existingUser = existingUserStr ? JSON.parse(existingUserStr) : {};
+      const updatedUser = { ...existingUser, ...data };
+      
+      const users = getStorage('medistock_users_db', INITIAL_USERS);
+      const idx = users.findIndex(u => u.email === updatedUser.email || u.id === updatedUser.id);
+      if (idx !== -1) {
+        users[idx] = { ...users[idx], ...updatedUser };
+        setStorage('medistock_users_db', users);
+      }
+      localStorage.setItem('medistock_user', JSON.stringify(updatedUser));
 
-    AuthService.logAudit('PROFILE_UPDATE', updatedUser.name, updatedUser.role, 'Updated profile information', 'SUCCESS');
-    return { success: true, user: updatedUser, message: 'Profile updated successfully' };
+      AuthService.logAudit('PROFILE_UPDATE', updatedUser.name, updatedUser.role, 'Updated profile information', 'SUCCESS');
+      return { success: true, user: updatedUser, message: 'Profile updated successfully' };
+    }
   },
 
   changePassword: async ({ currentPassword, newPassword }) => {
-    await delay();
-    if (currentPassword && newPassword && newPassword.length >= 6) {
-      AuthService.logAudit('PASSWORD_CHANGE', 'Current User', 'USER', 'Changed account password', 'SUCCESS');
+    try {
+      await api.put('/users/me', { password: newPassword });
+      AuthService.logAudit('PASSWORD_CHANGE', 'Current User', 'USER', 'Changed account password via API', 'SUCCESS');
       return { success: true, message: 'Password updated successfully' };
+    } catch (err) {
+      await delay();
+      if (currentPassword && newPassword && newPassword.length >= 6) {
+        AuthService.logAudit('PASSWORD_CHANGE', 'Current User', 'USER', 'Changed account password', 'SUCCESS');
+        return { success: true, message: 'Password updated successfully' };
+      }
+      throw new Error('New password must be at least 6 characters.');
     }
-    throw new Error('New password must be at least 6 characters.');
   },
 
   logAudit: (action, user, role, details, status = 'SUCCESS') => {
@@ -651,11 +694,29 @@ export const AuthService = {
 // ==========================================
 export const UserService = {
   getUsers: async () => {
+    try {
+      const res = await api.get('/users');
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        setStorage('medistock_users_db', res.data);
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     return getStorage('medistock_users_db', INITIAL_USERS);
   },
 
   createUser: async (userData) => {
+    try {
+      const res = await api.post('/users', userData);
+      if (res.data) {
+        AuthService.logAudit('USER_CREATED', 'Admin', 'ADMIN', `Created new user ${res.data.name} via API`);
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     const users = getStorage('medistock_users_db', INITIAL_USERS);
     const newUser = {
@@ -677,6 +738,15 @@ export const UserService = {
   },
 
   updateUser: async (id, updatedData) => {
+    try {
+      const res = await api.put(`/users/${id}`, updatedData);
+      if (res.data) {
+        AuthService.logAudit('USER_UPDATED', 'Admin', 'ADMIN', `Updated user ${res.data.name} via API`);
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     const users = getStorage('medistock_users_db', INITIAL_USERS);
     const idx = users.findIndex(u => u.id === Number(id));
@@ -690,6 +760,11 @@ export const UserService = {
   },
 
   deleteUser: async (id) => {
+    try {
+      await api.delete(`/users/${id}`);
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     let users = getStorage('medistock_users_db', INITIAL_USERS);
     const target = users.find(u => u.id === Number(id));
@@ -700,6 +775,14 @@ export const UserService = {
   },
 
   getRoles: async () => {
+    try {
+      const res = await api.get('/users/roles');
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     return getStorage('medistock_roles_db', INITIAL_ROLES);
   },
@@ -728,6 +811,58 @@ export const UserService = {
 // ==========================================
 export const MedicineService = {
   getAll: async (params = {}) => {
+    try {
+      const res = await api.get('/inventory');
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        const localMeds = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
+        const mapped = res.data.map(inv => {
+          const matched = localMeds.find(m => m.id === inv.medicineId || m.name === inv.medicineName);
+          return {
+            id: inv.medicineId || inv.id,
+            name: inv.medicineName,
+            code: inv.medicineCode,
+            categoryName: inv.categoryName || matched?.categoryName || 'General',
+            categoryId: matched?.categoryId || 1,
+            supplierName: inv.supplierName || matched?.supplierName || 'Apex Pharmaceuticals Ltd',
+            supplierId: matched?.supplierId || 1,
+            dosageForm: matched?.dosageForm || 'Tablets',
+            storageCondition: matched?.storageCondition || 'Room Temperature (15-25°C)',
+            description: matched?.description || '',
+            unitPrice: matched?.unitPrice || 15.00,
+            reorderLevel: inv.reorderLevel !== undefined ? inv.reorderLevel : (matched?.reorderLevel || 20),
+            totalQuantity: inv.quantity !== undefined ? inv.quantity : (matched?.totalQuantity || 0),
+            stockStatus: inv.stockStatus || (inv.quantity <= 0 ? 'OUT_OF_STOCK' : (inv.quantity <= inv.reorderLevel ? 'LOW_STOCK' : 'IN_STOCK')),
+            expiryStatus: matched?.expiryStatus || 'VALID',
+            nearestExpiryDate: matched?.nearestExpiryDate || '2027-12-31',
+            batches: matched?.batches || []
+          };
+        });
+        
+        let filtered = [...mapped];
+        if (params.search) {
+          const q = params.search.toLowerCase();
+          filtered = filtered.filter(m => 
+            m.name?.toLowerCase().includes(q) || 
+            m.code?.toLowerCase().includes(q) || 
+            m.categoryName?.toLowerCase().includes(q) ||
+            m.supplierName?.toLowerCase().includes(q)
+          );
+        }
+        if (params.categoryId && params.categoryId !== 'ALL') {
+          filtered = filtered.filter(m => m.categoryId === Number(params.categoryId));
+        }
+        if (params.stockStatus && params.stockStatus !== 'ALL') {
+          filtered = filtered.filter(m => m.stockStatus === params.stockStatus);
+        }
+        if (params.expiryStatus && params.expiryStatus !== 'ALL') {
+          filtered = filtered.filter(m => m.expiryStatus === params.expiryStatus);
+        }
+        return filtered;
+      }
+    } catch (err) {
+      // Fallback
+    }
+
     await delay();
     const medicines = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
     let filtered = [...medicines];
@@ -911,12 +1046,33 @@ export const MedicineService = {
 // 4. SUPPLIER MANAGEMENT SERVICE
 // ==========================================
 export const SupplierService = {
-  getAll: async () => {
+  getAll: async (search, status) => {
+    try {
+      const params = {};
+      if (search) params.search = search;
+      if (status && status !== 'ALL') params.status = status;
+      const res = await api.get('/suppliers', { params });
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        setStorage('medistock_suppliers_db', res.data);
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     return getStorage('medistock_suppliers_db', INITIAL_SUPPLIERS);
   },
 
   create: async (supplierData) => {
+    try {
+      const res = await api.post('/suppliers', supplierData);
+      if (res.data) {
+        AuthService.logAudit('SUPPLIER_CREATED', 'Manager', 'INVENTORY_MANAGER', `Added supplier via API: ${res.data.name}`);
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     const suppliers = getStorage('medistock_suppliers_db', INITIAL_SUPPLIERS);
     const newSupplier = {
@@ -942,6 +1098,15 @@ export const SupplierService = {
   },
 
   update: async (id, data) => {
+    try {
+      const res = await api.put(`/suppliers/${id}`, data);
+      if (res.data) {
+        AuthService.logAudit('SUPPLIER_UPDATED', 'Manager', 'INVENTORY_MANAGER', `Updated supplier via API: ${res.data.name}`);
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     const suppliers = getStorage('medistock_suppliers_db', INITIAL_SUPPLIERS);
     const idx = suppliers.findIndex(s => s.id === Number(id));
@@ -955,6 +1120,11 @@ export const SupplierService = {
   },
 
   delete: async (id) => {
+    try {
+      await api.delete(`/suppliers/${id}`);
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     let suppliers = getStorage('medistock_suppliers_db', INITIAL_SUPPLIERS);
     suppliers = suppliers.filter(s => s.id !== Number(id));
@@ -964,11 +1134,29 @@ export const SupplierService = {
 
   // Purchase Orders
   getPurchaseOrders: async () => {
+    try {
+      const res = await api.get('/purchases');
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        setStorage('medistock_purchase_orders', res.data);
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     return getStorage('medistock_purchase_orders', INITIAL_PURCHASE_ORDERS);
   },
 
   createPurchaseOrder: async (poData) => {
+    try {
+      const res = await api.post('/purchases', poData);
+      if (res.data) {
+        AuthService.logAudit('PURCHASE_ORDER_CREATED', 'Manager', 'INVENTORY_MANAGER', `Created ${res.data.poNumber} via API`);
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     const orders = getStorage('medistock_purchase_orders', INITIAL_PURCHASE_ORDERS);
     const newPO = {
@@ -990,6 +1178,15 @@ export const SupplierService = {
   },
 
   updatePOStatus: async (id, status) => {
+    try {
+      const res = await api.put(`/purchases/${id}/status`, { status });
+      if (res.data) {
+        AuthService.logAudit('PO_STATUS_CHANGED', 'Manager', 'INVENTORY_MANAGER', `Updated ${res.data.poNumber} to ${status} via API`);
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     const orders = getStorage('medistock_purchase_orders', INITIAL_PURCHASE_ORDERS);
     const idx = orders.findIndex(o => o.id === Number(id));
@@ -997,7 +1194,6 @@ export const SupplierService = {
       orders[idx].status = status;
       setStorage('medistock_purchase_orders', orders);
 
-      // If delivered, automatically restock medicines!
       if (status === 'DELIVERED') {
         const medicines = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
         orders[idx].items?.forEach(item => {
@@ -1024,9 +1220,34 @@ export const SupplierService = {
 // ==========================================
 export const StockMonitoringService = {
   getAlerts: async () => {
+    try {
+      const [lowStockRes, outOfStockRes, expiringRes, expiredRes] = await Promise.all([
+        api.get('/inventory/low-stock').catch(() => ({ data: [] })),
+        api.get('/inventory/out-of-stock').catch(() => ({ data: [] })),
+        api.get('/expiry/expiring').catch(() => ({ data: [] })),
+        api.get('/expiry/expired').catch(() => ({ data: [] }))
+      ]);
+      const lowStock = Array.isArray(lowStockRes.data) ? lowStockRes.data : [];
+      const outOfStock = Array.isArray(outOfStockRes.data) ? outOfStockRes.data : [];
+      const expiringSoon = Array.isArray(expiringRes.data) ? expiringRes.data : [];
+      const expired = Array.isArray(expiredRes.data) ? expiredRes.data : [];
+
+      if (lowStock.length > 0 || outOfStock.length > 0 || expiringSoon.length > 0 || expired.length > 0) {
+        return {
+          totalAlerts: lowStock.length + outOfStock.length + expiringSoon.length + expired.length,
+          outOfStock,
+          lowStock,
+          expiringSoon,
+          expired,
+          lastScanTime: new Date().toISOString()
+        };
+      }
+    } catch (err) {
+      // Fallback
+    }
+
     await delay();
     const medicines = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
-    
     const lowStock = medicines.filter(m => m.stockStatus === 'LOW_STOCK');
     const outOfStock = medicines.filter(m => m.stockStatus === 'OUT_OF_STOCK');
     const expiringSoon = medicines.filter(m => m.expiryStatus === 'EXPIRING_SOON');
@@ -1043,11 +1264,36 @@ export const StockMonitoringService = {
   },
 
   getAdjustments: async () => {
+    try {
+      const res = await api.get('/inventory/history');
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     return getStorage('medistock_adjustments_db', INITIAL_ADJUSTMENTS);
   },
 
   createAdjustment: async (adjData) => {
+    try {
+      if (adjData.medicineId) {
+        const res = await api.put(`/inventory/${adjData.medicineId}/stock`, {
+          type: adjData.type || 'OUT',
+          quantity: Number(adjData.quantity),
+          reason: adjData.reason || 'MANUAL_ADJUSTMENT',
+          notes: adjData.notes || ''
+        });
+        if (res.data) {
+          AuthService.logAudit('STOCK_ADJUSTED', adjData.adjustedBy || 'Staff', 'PHARMACIST', `Adjusted stock for medicine #${adjData.medicineId} via API`);
+          return res.data;
+        }
+      }
+    } catch (err) {
+      // Fallback
+    }
+
     await delay();
     const adjustments = getStorage('medistock_adjustments_db', INITIAL_ADJUSTMENTS);
     const medicines = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
@@ -1108,6 +1354,15 @@ export const StockMonitoringService = {
 // ==========================================
 export const DashboardService = {
   getStats: async () => {
+    try {
+      const res = await api.get('/dashboard/stats');
+      if (res.data && res.data.totalMedicines !== undefined) {
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
+
     await delay();
     const medicines = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
     const adjustments = getStorage('medistock_adjustments_db', INITIAL_ADJUSTMENTS);
@@ -1138,5 +1393,13 @@ export const DashboardService = {
     };
   }
 };
+
+// Team Two direct API client modules exports for backwards compatibility
+export { default as apiClient } from '../api/apiClient';
+export { default as authApi } from '../api/authApi';
+export { default as medicineApi } from '../api/medicineApi';
+export { default as supplierApi } from '../api/supplierApi';
+export { default as inventoryApi } from '../api/inventoryApi';
+export { default as expiryApi } from '../api/expiryApi';
 
 export default api;

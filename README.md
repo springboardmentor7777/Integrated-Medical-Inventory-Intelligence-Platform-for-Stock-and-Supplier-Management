@@ -1,67 +1,42 @@
-# 🏥 Integrated Medical Inventory Intelligence Platform
+# 🏥 Integrated Medical Inventory Intelligence Platform (Team Two)
 
 ### Stock and Supplier Management System
 
-A comprehensive, full-featured **Medical Inventory Management Platform** built with **React + Vite** that provides real-time stock monitoring, supplier management, expiry tracking, and intelligent alerts for healthcare facilities.
+A comprehensive, full-stack **Medical Inventory Intelligence Platform** featuring a **Spring Boot 3 + Java 21 REST API Backend** and a **React 18 + Vite Frontend** with real-time stock monitoring, supplier management, batch expiry tracking, and role-based access control.
 
 ---
 
-## 🚀 Features Completed
+## 🌟 Team Two Integration Highlights & Changes
 
-### ✅ Feature 1: Authentication & User Role Management Service
-- **Login / Register** with email & password
-- **OAuth2 SSO** simulation (Google Health, Microsoft Azure AD)
-- **Forgot Password** with OTP verification (OTP: `7842`)
-- **JWT Token Inspector** — view decoded token payload
-- **Role-Based Access Control (RBAC)** — Admin, Pharmacist, Inventory Manager, Doctor, Nurse
-- **10-Permission Matrix** — granular permission toggles per role
-- **User Directory** — Add, Edit, Suspend, Activate staff accounts
-- **Audit Trail Logging** — tracks all login, CRUD, and security events
+### 1. 🔄 Full-Stack REST API Integration
+- **Frontend Service Layer**: Enhanced `frontend/src/services/api.js` and `frontend/src/api/` to communicate directly with Spring Boot REST endpoints (`/api/v1/*`) with unified token handling and offline fallback.
+- **API Client Modules**: Integrated Team Two client modules (`apiClient`, `authApi`, `medicineApi`, `supplierApi`, `inventoryApi`, `expiryApi`) directly into `frontend/src/api/`.
+- **Backend Architecture**: Layered Spring Boot architecture in `backend/` with JPA repositories, DTO validation, BCrypt password hashing, and stateless JWT security filters.
 
-### ✅ Feature 2: Medicine Inventory Management Service
-- **Medicine Catalog** — full CRUD (Create, Read, Update, Delete)
-- **Category Management** — therapeutic drug classification with storage guidelines
-- **Multi-Batch Tracking** — batch numbers, manufacturing dates, expiry dates, purchase costs
-- **Stock Status Engine** — automatic `IN_STOCK`, `LOW_STOCK`, `OUT_OF_STOCK` classification
-- **Expiry Status Engine** — automatic `VALID`, `EXPIRING_SOON`, `EXPIRED` detection
-- **Search & Filter** — filter by name, code, category, stock status, expiry status
-- **Editable Stock & Expiry** — directly edit total stock quantity and nearest expiry date
+### 2. 🔐 Authentication & Startup Flow
+- **Default Login Startup**: Configured application routing in `frontend/src/App.jsx` so the application always starts directly on `/login` with clean redirects.
+- **Role-Based Access Control (RBAC)**: Support for `ADMIN`, `PHARMACIST`, `INVENTORY_MANAGER`, `DOCTOR`, and `NURSE` roles.
+- **Pre-seeded Credentials**: Auto-initialized accounts (`admin@medistock.com` / `admin123` and `pharmacist@medistock.com` / `admin123`).
 
-### ✅ Feature 3: Supplier & Purchase Order Management Service
-- **Supplier Directory** — vendor profiles with contact info, tax ID, payment terms
-- **Supplier Performance Metrics** — rating, on-time delivery rate, lead time, total orders
-- **Purchase Order (PO) Workflow** — Create PO → `PENDING` → `APPROVED` → `SHIPPED` → `DELIVERED`
-- **Auto-Restock on Delivery** — when PO status is marked `DELIVERED`, medicine stock automatically increases
-- **Search & Status Filtering** — filter suppliers by name, status, and performance
-
-### ✅ Feature 4: Stock Monitoring, Alerts & Admin Dashboard
-- **Real-Time Notification Engine** — navbar bell icon with live unread badge count
-- **Alert Categories** — Critical (Out of Stock), Warning (Low Stock), Expiry (Expiring Soon / Expired)
-- **Top Emergency Ticker Banner** — auto-displays critical out-of-stock and expired medication alerts
-- **Stock Adjustment Engine** — record stock IN/OUT movements with audit trail
-- **1-Click Restock PO Generator** — instantly create purchase orders from alert items
-- **Admin Dashboard with 8 Analytics Pillars:**
-  1. Stock Overview (total items, valuation, depletion radar)
-  2. Low Stock Items
-  3. Expiry Tracker
-  4. Supplier Analytics
-  5. Purchase History
-  6. Reports & Export (CSV & JSON download)
-  7. User Management summary
-  8. System Monitoring
+### 3. 📦 Core Modules
+- **Medicine & Inventory Management**: Live stock tracking, batch numbers, storage conditions, and low/out-of-stock indicators.
+- **Supplier & Purchase Orders**: Vendor metrics, delivery tracking, and automatic stock replenishment on order fulfillment.
+- **Stock Monitoring & Expiry Alerts**: Real-time ticker banner, critical alert badges, and expiry summary reports.
+- **Dashboard & Analytics**: Aggregated inventory valuation, category breakdown, and stock movement audit trails.
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Technology Stack
 
 | Layer | Technology |
-|-------|-----------|
+|---|---|
 | **Frontend Framework** | React 18 + Vite |
-| **Routing** | React Router DOM v6 |
-| **Icons** | Lucide React |
-| **Styling** | Custom CSS (Glassmorphism, Dark Theme) |
-| **State Management** | React Context API + localStorage |
-| **Data Layer** | In-memory mock services with localStorage persistence |
+| **Frontend Routing** | React Router DOM v6 |
+| **Icons & Styling** | Lucide React + Glassmorphism Theme CSS |
+| **Backend Framework** | Spring Boot 3.2.5 (Java 21 LTS) |
+| **Security & Auth** | Spring Security 6 + JJWT (Stateless JWT) |
+| **Persistence** | Spring Data JPA + Hibernate + H2 / MySQL |
+| **Build Tools** | Maven 3.9+ (Backend) & npm / Vite (Frontend) |
 
 ---
 
@@ -69,34 +44,57 @@ A comprehensive, full-featured **Medical Inventory Management Platform** built w
 
 ```
 SpringboadProject/
-├── frontend/
+├── backend/                         # Spring Boot Backend Application
+│   ├── pom.xml
+│   ├── mvnw / mvnw.cmd
+│   ├── README.md
+│   └── src/
+│       ├── main/java/com/medistock/ # Controllers, Services, DTOs, Entities, Security
+│       └── test/java/com/medistock/ # JUnit 5 & Integration Test Suites
+├── frontend/                        # React + Vite Frontend Application
 │   ├── index.html
 │   ├── package.json
-│   ├── vite.config.js
+│   ├── vite.config.js               # Proxies /api requests to http://localhost:8080
 │   └── src/
 │       ├── main.jsx
-│       ├── App.jsx
+│       ├── App.jsx                  # Main routes starting on /login
 │       ├── index.css
-│       ├── context/
-│       │   └── AuthContext.jsx
-│       ├── components/
-│       │   ├── Navbar.jsx
-│       │   ├── Sidebar.jsx
-│       │   ├── StatCard.jsx
-│       │   ├── MedicineModal.jsx
-│       │   └── ViewMedicineModal.jsx
-│       ├── pages/
-│       │   ├── LoginPage.jsx
-│       │   ├── DashboardPage.jsx
-│       │   ├── InventoryPage.jsx
-│       │   ├── SuppliersPage.jsx
-│       │   ├── AlertsPage.jsx
-│       │   ├── UsersPage.jsx
-│       │   └── ProfilePage.jsx
-│       └── services/
-│           └── api.js
-└── .gitignore
+│       ├── api/                     # Team Two REST API Client Modules
+│       ├── context/                 # AuthContext & Session State
+│       ├── components/              # Navbar, Sidebar, Modals, Cards
+│       ├── pages/                   # LoginPage, DashboardPage, InventoryPage, etc.
+│       └── services/                # api.js REST Service Layer with Fallback
+├── api/                             # Root API Client definitions
+└── README.md
 ```
+
+---
+
+## 🚀 How to Run the Platform
+
+### 1. Start the Backend Server (Port 8080)
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+*Health Check: `http://localhost:8080/api/v1/health`*
+
+### 2. Start the Frontend Application (Port 3000)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+*Open in Browser: `http://localhost:3000` (Starts directly on `/login`)*
+
+---
+
+## 🔑 Demo Login Credentials
+
+| Role | Email | Password | Access Level |
+|---|---|---|---|
+| **Admin** | `admin@medistock.com` | `admin123` | Full system, user, and catalog access |
+| **Pharmacist** | `pharmacist@medistock.com` | `admin123` | Inventory, dispensing, and batch tracking |
 
 ---
 
