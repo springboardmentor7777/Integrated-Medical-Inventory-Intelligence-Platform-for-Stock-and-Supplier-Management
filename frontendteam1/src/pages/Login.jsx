@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
+import "../styles/Login.css";
 
 function Login() {
   const navigate = useNavigate();
@@ -9,7 +10,6 @@ function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [error, setError] = useState("");
 
   const handleSubmit = async (event) => {
@@ -23,70 +23,64 @@ function Login() {
       });
 
       login(response);
-
       navigate("/dashboard");
     } catch (error) {
       console.error(error);
 
       setError(
         error.response?.data?.message ||
-        "Login failed. Please check your email and password."
+          "Login failed. Please check your email and password."
       );
     }
   };
 
   return (
-    <div>
-      <h1>MediStock Login</h1>
+    <div className="login-page">
+      <div className="login-card">
 
-      <form onSubmit={handleSubmit}>
+        <div className="logo-circle">M</div>
 
-        <div>
-          <label>Email</label>
-          <br />
+        <h1>MediStock</h1>
+        <p className="subtitle">Welcome back! Please login to continue.</p>
 
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
-        </div>
+        <form onSubmit={handleSubmit}>
 
-        <br />
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </div>
 
-        <div>
-          <label>Password</label>
-          <br />
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-        </div>
+          {error && <p className="error-message">{error}</p>}
 
-        <br />
+          <button type="submit" className="primary-button">
+            Login
+          </button>
 
-        <button type="submit">
-          Login
-        </button>
+        </form>
 
-      </form>
+        <p className="account-text">
+          Don't have an account?{" "}
+          <Link to="/register">Register here</Link>
+        </p>
 
-      {error && (
-        <p>{error}</p>
-      )}
-
-      <p>
-        Don't have an account?{" "}
-        <Link to="/register">
-          Register here
-        </Link>
-      </p>
+      </div>
     </div>
   );
 }

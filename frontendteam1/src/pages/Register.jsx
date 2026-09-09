@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../services/authService";
+import "../styles/Register.css";
 
 function Register() {
   const navigate = useNavigate();
@@ -38,98 +39,88 @@ function Register() {
 
       setError(
         error.response?.data?.message ||
-        "Registration failed. Please try again."
+          "Registration failed. Please try again."
       );
     }
   };
 
   return (
-    <div>
-      <h1>MediStock Register</h1>
+    <div className="register-page">
+      <div className="register-card">
 
-      <form onSubmit={handleSubmit}>
+        <div className="logo-circle">M</div>
 
-        <div>
-          <label>Full Name</label>
-          <br />
+        <h1>Create Account</h1>
+        <p className="subtitle">Join MediStock today</p>
 
-          <input
-            type="text"
-            placeholder="Enter your full name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            required
-          />
-        </div>
+        <form onSubmit={handleSubmit}>
 
-        <br />
+          <div className="form-group">
+            <label>Full Name</label>
+            <input
+              type="text"
+              placeholder="Enter your full name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              required
+            />
+          </div>
 
-        <div>
-          <label>Email</label>
-          <br />
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </div>
 
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
-        </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="Create a password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+            />
+          </div>
 
-        <br />
+          <div className="form-group">
+            <label>Role</label>
 
-        <div>
-          <label>Password</label>
-          <br />
+            <select
+              value={role}
+              onChange={(event) => setRole(event.target.value)}
+            >
+              <option value="Admin">Admin</option>
+              <option value="Pharmacist">Pharmacist</option>
+              <option value="Staff">Staff</option>
+            </select>
+          </div>
 
-          <input
-            type="password"
-            placeholder="Create a password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-        </div>
+          {message && (
+            <p className="success-message">{message}</p>
+          )}
 
-        <br />
+          {error && (
+            <p className="error-message">{error}</p>
+          )}
 
-        <div>
-          <label>Role</label>
-          <br />
+          <button type="submit" className="primary-button">
+            Create Account
+          </button>
 
-          <select
-            value={role}
-            onChange={(event) => setRole(event.target.value)}
-          >
-            <option value="Admin">Admin</option>
-            <option value="Pharmacist">Pharmacist</option>
-            <option value="Staff">Staff</option>
-          </select>
-        </div>
+        </form>
 
-        <br />
+        <p className="account-text">
+          Already have an account?{" "}
+          <Link to="/login">Login here</Link>
+        </p>
 
-        <button type="submit">
-          Register
-        </button>
-
-      </form>
-
-      {message && (
-        <p>{message}</p>
-      )}
-
-      {error && (
-        <p>{error}</p>
-      )}
-
-      <p>
-        Already have an account?{" "}
-        <Link to="/login">
-          Login here
-        </Link>
-      </p>
+      </div>
     </div>
   );
 }
