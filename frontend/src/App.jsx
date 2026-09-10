@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Login from './pages/Login';
@@ -12,41 +12,40 @@ import AppLayout from './components/AppLayout';
 import authService from './services/authService';
 
 function App() {
-  const home = authService.isAuthenticated() ? '/dashboard' : '/login';
+    const home = authService.isAuthenticated() ? '/dashboard' : '/login';
 
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/suppliers" element={<Suppliers />} />
-          <Route path="/stock" element={<StockTracking />} />
-          <Route path="/alerts" element={<Alerts />} />
-        </Route>
-
-        <Route path="/" element={<Navigate to={home} replace />} />
-        <Route path="*" element={<Navigate to={home} replace />} />
-      </Routes>
-    </BrowserRouter>
-  );
-=======
-import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import AppRoutes from "./routes/AppRoutes";
-import "./App.css";
-
-function App() {
     return (
         <BrowserRouter>
-            <AuthProvider>
-                <AppRoutes />
-            </AuthProvider>
+            <Routes>
+                <Route path="/login" element={<Login/>}/>
+                <Route path="/register" element={<Register/>}/>
+
+                <Route element={<ProtectedRoute><AppLayout/></ProtectedRoute>}>
+                    <Route path="/dashboard" element={<Dashboard/>}/>
+                    <Route path="/suppliers" element={<Suppliers/>}/>
+                    <Route path="/stock" element={<StockTracking/>}/>
+                    <Route path="/alerts" element={<Alerts/>}/>
+                </Route>
+
+                <Route path="/" element={<Navigate to={home} replace/>}/>
+                <Route path="*" element={<Navigate to={home} replace/>}/>
+            </Routes>
         </BrowserRouter>
     );
->>>>>>> 30faecb (Complete medicine and inventory frontend integration)
 }
+// import { BrowserRouter } from "react-router-dom";
+// import { AuthProvider } from "./context/AuthContext";
+// import AppRoutes from "./routes/AppRoutes";
+// import "./App.css";
+//
+// function App() {
+//     return (
+//         <BrowserRouter>
+//             <AuthProvider>
+//                 <AppRoutes />
+//             </AuthProvider>
+//         </BrowserRouter>
+//     );
+// }
 
 export default App;

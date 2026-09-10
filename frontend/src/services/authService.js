@@ -1,6 +1,7 @@
 import api from './api';
 
 export const authService = {
+
   async login(credentials) {
     const response = await api.post('/api/auth/login', credentials);
     this.saveSession(response.data);
@@ -14,14 +15,18 @@ export const authService = {
 
   saveSession(authData) {
     localStorage.setItem('medistock_token', authData.token);
+
+    // Safely extract properties whether authData flatly contains user attributes OR holds a nested user object
+    const userObj = authData.user || authData;
+
     localStorage.setItem(
-      'medistock_user',
-      JSON.stringify({
-        id: authData.userId,
-        name: authData.name,
-        email: authData.email,
-        role: authData.role,
-      })
+        'medistock_user',
+        JSON.stringify({
+          id: userObj.id || userObj.userId || null,
+          name: userObj.name || userObj.fullName || userObj.username || 'User',
+          email: userObj.email || '',
+          role: userObj.role || 'GUEST',
+        })
     );
   },
 
@@ -31,7 +36,8 @@ export const authService = {
 
   getCurrentUser() {
     try {
-      return JSON.parse(localStorage.getItem('medistock_user'));
+      const userStr = localStorage.getItem('medistock_user');
+      return userStr ? JSON.parse(userStr) : null;
     } catch {
       return null;
     }
