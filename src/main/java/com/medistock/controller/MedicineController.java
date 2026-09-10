@@ -3,6 +3,7 @@ package com.medistock.controller;
 import com.medistock.dto.MedicineRequest;
 import com.medistock.entity.Medicine;
 import com.medistock.service.MedicineService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,8 @@ public class MedicineController {
     }
 
     @PostMapping
-    public ResponseEntity<Medicine> addMedicine(@RequestBody MedicineRequest request) {
+    public ResponseEntity<Medicine> addMedicine(
+            @Valid @RequestBody MedicineRequest request) {
         return ResponseEntity.ok(medicineService.addMedicine(request));
     }
 
@@ -29,17 +31,21 @@ public class MedicineController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Medicine> getMedicineById(@PathVariable Integer id) {
+    public ResponseEntity<Medicine> getMedicineById(
+            @PathVariable Integer id) {
         return ResponseEntity.ok(medicineService.getMedicineById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Medicine> updateMedicine(@PathVariable Integer id, @RequestBody MedicineRequest request) {
+    public ResponseEntity<Medicine> updateMedicine(
+            @PathVariable Integer id,
+            @Valid @RequestBody MedicineRequest request) {
         return ResponseEntity.ok(medicineService.updateMedicine(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteMedicine(@PathVariable Integer id) {
+    public ResponseEntity<String> deleteMedicine(
+            @PathVariable Integer id) {
         medicineService.deleteMedicine(id);
         return ResponseEntity.ok("Medicine deleted successfully");
     }
