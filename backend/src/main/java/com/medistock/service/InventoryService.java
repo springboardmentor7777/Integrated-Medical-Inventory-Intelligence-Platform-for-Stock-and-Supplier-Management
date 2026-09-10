@@ -24,15 +24,18 @@ public class InventoryService {
     private final MedicineRepository medicineRepository;
     private final StockLogRepository stockLogRepository;
     private final AuthService authService;
+    private final RealtimeNotificationService realtimeNotificationService;
 
     public InventoryService(InventoryRepository inventoryRepository,
                             MedicineRepository medicineRepository,
                             StockLogRepository stockLogRepository,
-                            AuthService authService) {
+                            AuthService authService,
+                            RealtimeNotificationService realtimeNotificationService) {
         this.inventoryRepository = inventoryRepository;
         this.medicineRepository = medicineRepository;
         this.stockLogRepository = stockLogRepository;
         this.authService = authService;
+        this.realtimeNotificationService = realtimeNotificationService;
     }
 
     // ── GET ALL INVENTORY ─────────────────────────────────────────────────────
@@ -130,6 +133,22 @@ public class InventoryService {
                 request.getNotes()
         );
         stockLogRepository.save(stockLog);
+
+        // ── Broadcast real-time WebSocket events ─────────────────────────
+        String action = request.getType() == StockMovementType.IN ? "STOCK_IN" : "STOCK_OUT";
+        realtimeNotificationService.notifyInventoryUpdate(
+                action, medicineId, medicine.getName(), InventoryResponse.fromEntity(inventory));
+
+        // Fire alerts for critical stock levels
+        if (newStock == 0) {
+            realtimeNotificationService.notifyStockAlert(
+                    "OUT_OF_STOCK", medicineId, medicine.getName(),
+                    medicine.getName() + " is now OUT OF STOCK!");
+        } else if (inventory.getStockStatus() == StockStatus.LOW_STOCK) {
+            realtimeNotificationService.notifyStockAlert(
+                    "LOW_STOCK", medicineId, medicine.getName(),
+                    medicine.getName() + " is LOW on stock (" + newStock + " remaining)");
+        }
 
         return InventoryResponse.fromEntity(inventory);
     }
