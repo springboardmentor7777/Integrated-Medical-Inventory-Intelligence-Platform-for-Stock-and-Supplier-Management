@@ -1,51 +1,33 @@
 import { useState } from "react";
+import { useAuth } from "../context/useAuth";
 import { useLocation, useNavigate } from "react-router-dom";
+
+const API_URL = "http://localhost:8082/api";
 
 const EditMedicine = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
+    const { user } = useAuth();
 
-    const selectedMedicine =
-        location.state?.medicine;
+    const existingMedicine = location.state?.medicine;
 
     const [medicine, setMedicine] = useState(
-        selectedMedicine || {
-            id: "",
-            name: "",
-            category: "",
-            quantity: "",
-            price: "",
-            expiryDate: ""
-        }
+        existingMedicine
+            ? {
+                name: existingMedicine.name || "",
+                category: existingMedicine.category || "",
+                manufacturer: existingMedicine.manufacturer || "",
+                description: existingMedicine.description || "",
+                price: existingMedicine.price ?? "",
+                reorderLevel: existingMedicine.reorderLevel ?? ""
+            }
+            : null
     );
 
-    const handleChange = (e) => {
+    const [loading, setLoading] = useState(false);
 
-        setMedicine({
-            ...medicine,
-            [e.target.name]: e.target.value
-        });
-    };
-
-    const handleSubmit = (e) => {
-
-        e.preventDefault();
-
-        if (!selectedMedicine) {
-            alert("Medicine data not found.");
-            return;
-        }
-
-        // Send updated medicine back to dashboard
-        navigate("/medicines", {
-            state: {
-                updatedMedicine: medicine
-            }
-        });
-    };
-
-    if (!selectedMedicine) {
+    if (!medicine) {
 
         return (
             <div className="medicine-page">
@@ -54,7 +36,10 @@ const EditMedicine = () => {
 
                     <div>
                         <h1>MediStock</h1>
-                        <p>Medicine Inventory Management</p>
+
+                        <p>
+                            Medicine Inventory Management
+                        </p>
                     </div>
 
                 </header>
@@ -64,23 +49,25 @@ const EditMedicine = () => {
                     <div className="page-title">
 
                         <div>
-                            <h2>Medicine Not Found</h2>
+
+                            <h2>
+                                Medicine Not Found
+                            </h2>
 
                             <p>
                                 Please select a medicine from the dashboard.
                             </p>
+
                         </div>
 
-                        <button
-                            className="add-medicine-btn"
-                            onClick={() =>
-                                navigate("/medicines")
-                            }
-                        >
-                            Back to Dashboard
-                        </button>
-
                     </div>
+
+                    <button
+                        className="add-medicine-btn"
+                        onClick={() => navigate("/medicines")}
+                    >
+                        Back to Dashboard
+                    </button>
 
                 </main>
 
@@ -88,21 +75,107 @@ const EditMedicine = () => {
         );
     }
 
+    const handleChange = (e) => {
+
+        setMedicine({
+            ...medicine,
+            [e.target.name]: e.target.value
+        });
+
+    };
+
+    const handleSubmit = async (e) => {
+
+        e.preventDefault();
+
+        if (
+            !medicine.name ||
+            !medicine.category ||
+            !medicine.manufacturer ||
+            !medicine.description ||
+            medicine.price === "" ||
+            medicine.reorderLevel === ""
+        ) {
+            alert("Please fill all fields.");
+            return;
+        }
+
+        try {
+
+            setLoading(true);
+
+            const response = await fetch(
+                `${API_URL}/medicines/${existingMedicine.id}`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`
+                    },
+
+                    body: JSON.stringify({
+                        name: medicine.name,
+                        category: medicine.category,
+                        manufacturer: medicine.manufacturer,
+                        description: medicine.description,
+                        price: Number(medicine.price),
+                        reorderLevel: Number(medicine.reorderLevel)
+                    })
+                }
+            );
+
+            const responseText = await response.text();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    responseText ||
+                    `Update failed: ${response.status}`
+                );
+            }
+
+            alert("Medicine updated successfully.");
+
+            navigate("/medicines");
+
+        } catch (error) {
+
+            console.error(
+                "Error updating medicine:",
+                error
+            );
+
+            alert(
+                error.message ||
+                "Failed to update medicine."
+            );
+
+        } finally {
+
+            setLoading(false);
+        }
+    };
+
     return (
+
         <div className="medicine-page">
 
             <header className="dashboard-header">
 
                 <div>
+
                     <h1>MediStock</h1>
-                    <p>Medicine Inventory Management</p>
+
+                    <p>
+                        Medicine Inventory Management
+                    </p>
+
                 </div>
 
                 <button
                     className="logout-btn"
-                    onClick={() =>
-                        navigate("/medicines")
-                    }
+                    onClick={() => navigate("/medicines")}
                 >
                     Back to Dashboard
                 </button>
@@ -114,11 +187,15 @@ const EditMedicine = () => {
                 <div className="page-title">
 
                     <div>
-                        <h2>Edit Medicine</h2>
+
+                        <h2>
+                            Edit Medicine
+                        </h2>
 
                         <p>
-                            Update medicine details
+                            Update medicine information
                         </p>
+
                     </div>
 
                 </div>
@@ -181,24 +258,39 @@ const EditMedicine = () => {
 
                     </div>
 
+                    <div className="form-group">
+
+                        <label>
+                            Manufacturer
+                        </label>
+
+                        <input
+                            type="text"
+                            name="manufacturer"
+                            value={medicine.manufacturer}
+                            onChange={handleChange}
+                            required
+                        />
+
+                    </div>
+
+                    <div className="form-group">
+
+                        <label>
+                            Description
+                        </label>
+
+                        <textarea
+                            name="description"
+                            value={medicine.description}
+                            onChange={handleChange}
+                            rows="4"
+                            required
+                        />
+
+                    </div>
+
                     <div className="form-row">
-
-                        <div className="form-group">
-
-                            <label>
-                                Quantity
-                            </label>
-
-                            <input
-                                type="number"
-                                name="quantity"
-                                min="0"
-                                value={medicine.quantity}
-                                onChange={handleChange}
-                                required
-                            />
-
-                        </div>
 
                         <div className="form-group">
 
@@ -218,21 +310,22 @@ const EditMedicine = () => {
 
                         </div>
 
-                    </div>
+                        <div className="form-group">
 
-                    <div className="form-group">
+                            <label>
+                                Reorder Level
+                            </label>
 
-                        <label>
-                            Expiry Date
-                        </label>
+                            <input
+                                type="number"
+                                name="reorderLevel"
+                                min="0"
+                                value={medicine.reorderLevel}
+                                onChange={handleChange}
+                                required
+                            />
 
-                        <input
-                            type="date"
-                            name="expiryDate"
-                            value={medicine.expiryDate}
-                            onChange={handleChange}
-                            required
-                        />
+                        </div>
 
                     </div>
 
@@ -241,9 +334,7 @@ const EditMedicine = () => {
                         <button
                             type="button"
                             className="cancel-btn"
-                            onClick={() =>
-                                navigate("/medicines")
-                            }
+                            onClick={() => navigate("/medicines")}
                         >
                             Cancel
                         </button>
@@ -251,8 +342,11 @@ const EditMedicine = () => {
                         <button
                             type="submit"
                             className="add-medicine-btn"
+                            disabled={loading}
                         >
-                            Update Medicine
+                            {loading
+                                ? "Updating..."
+                                : "Update Medicine"}
                         </button>
 
                     </div>

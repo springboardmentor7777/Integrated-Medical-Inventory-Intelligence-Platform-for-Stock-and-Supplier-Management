@@ -1,114 +1,144 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import MedicineList from "./MedicineList";
 import "../App.css";
+
+const API_URL = "http://localhost:8082/api";
 
 const MedicineDashboard = () => {
 
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation();
 
-    const [medicines, setMedicines] = useState([
-        {
-            id: 1,
-            name: "Paracetamol",
-            category: "Tablet",
-            quantity: 100,
-            price: 25,
-            expiryDate: "2027-12-15"
-        },
-        {
-            id: 2,
-            name: "Azithromycin",
-            category: "Tablet",
-            quantity: 50,
-            price: 80,
-            expiryDate: "2027-06-20"
-        },
-        {
-            id: 3,
-            name: "Cough Syrup",
-            category: "Syrup",
-            quantity: 8,
-            price: 120,
-            expiryDate: "2027-03-10"
-        },
-        {
-            id: 4,
-            name: "Insulin",
-            category: "Injection",
-            quantity: 0,
-            price: 450,
-            expiryDate: "2026-11-25"
+    const [medicines, setMedicines] = useState([]);
+    const [inventory, setInventory] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    const getHeaders = () => ({
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user?.token}`
+    });
+
+    const fetchMedicines = async () => {
+
+        const response = await fetch(
+            `${API_URL}/medicines`,
+            {
+                method: "GET",
+                headers: getHeaders()
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Medicine API failed: ${response.status}`);
         }
-    ]);
+
+        return await response.json();
+    };
+
+    const fetchInventory = async () => {
+
+        const response = await fetch(
+            `${API_URL}/inventory`,
+            {
+                method: "GET",
+                headers: getHeaders()
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Inventory API failed: ${response.status}`);
+        }
+
+        return await response.json();
+    };
+
+    const loadData = async () => {
+
+        try {
+
+            setLoading(true);
+            setError("");
+
+            const [medicineData, inventoryData] = await Promise.all([
+                fetchMedicines(),
+                fetchInventory()
+            ]);
+
+            setMedicines(medicineData);
+            setInventory(inventoryData);
+
+        } catch (error) {
+
+            console.error("Error loading data:", error);
+
+            setError(
+                "Unable to load medicines. Please check the backend and authorization token."
+            );
+
+        } finally {
+
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
 
-        const updatedMedicine =
-            location.state?.updatedMedicine;
-
-        const newMedicine =
-            location.state?.newMedicine;
-
-        if (updatedMedicine) {
-
-            setMedicines((currentMedicines) =>
-                currentMedicines.map((medicine) =>
-                    medicine.id === updatedMedicine.id
-                        ? updatedMedicine
-                        : medicine
-                )
-            );
-
-            navigate("/medicines", {
-                replace: true,
-                state: {}
-            });
-
-            return;
+        if (user?.token) {
+            loadData();
+        } else {
+            setLoading(false);
+            setError("Authorization token is missing.");
         }
 
-        if (newMedicine) {
-
-            setMedicines((currentMedicines) => [
-                ...currentMedicines,
-                newMedicine
-            ]);
-
-            navigate("/medicines", {
-                replace: true,
-                state: {}
-            });
-        }
-
-    }, [location.state, navigate]);
+    }, [user?.token]);
 
 
-    const totalMedicines = medicines.length;
+    const getQuantity = (medicineId) => {
 
-    const availableStock = medicines.filter(
+        const item = inventory.find(
+            (inventoryItem) =>
+                inventoryItem.medicineId === medicineId
+        );
+
+        return item ? item.quantity : 0;
+    };
+
+
+    const medicinesWithStock = medicines.map((medicine) => ({
+        ...medicine,
+        quantity: getQuantity(medicine.id)
+    }));
+
+
+    const totalMedicines = medicinesWithStock.length;
+
+    const availableStock = medicinesWithStock.filter(
         (medicine) => medicine.quantity > 10
     ).length;
 
-    const lowStock = medicines.filter(
+    const lowStock = medicinesWithStock.filter(
         (medicine) =>
             medicine.quantity > 0 &&
             medicine.quantity <= 10
     ).length;
 
-    const outOfStock = medicines.filter(
+    const outOfStock = medicinesWithStock.filter(
         (medicine) => medicine.quantity === 0
     ).length;
 
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
 
         const medicine = medicines.find(
             (item) => item.id === id
         );
+
+        if (!medicine) {
+            return;
+        }
 
         const confirmDelete = window.confirm(
             `Are you sure you want to delete ${medicine.name}?`
@@ -118,11 +148,40 @@ const MedicineDashboard = () => {
             return;
         }
 
-        setMedicines(
-            medicines.filter(
-                (item) => item.id !== id
-            )
-        );
+        try {
+
+            const response = await fetch(
+                `${API_URL}/medicines/${id}`,
+                {
+                    method: "DELETE",
+                    headers: getHeaders()
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `Delete failed: ${response.status}`
+                );
+            }
+
+            setMedicines((currentMedicines) =>
+                currentMedicines.filter(
+                    (item) => item.id !== id
+                )
+            );
+
+            setInventory((currentInventory) =>
+                currentInventory.filter(
+                    (item) => item.medicineId !== id
+                )
+            );
+
+        } catch (error) {
+
+            console.error("Error deleting medicine:", error);
+
+            alert("Failed to delete medicine.");
+        }
     };
 
 
@@ -133,9 +192,7 @@ const MedicineDashboard = () => {
 
                 <div>
                     <h1>MediStock</h1>
-                    <p>
-                        Medicine Inventory Management
-                    </p>
+                    <p>Medicine Inventory Management</p>
                 </div>
 
                 <div className="user-section">
@@ -165,9 +222,7 @@ const MedicineDashboard = () => {
                 <div className="page-title">
 
                     <div>
-                        <h2>
-                            Medicine Dashboard
-                        </h2>
+                        <h2>Medicine Dashboard</h2>
 
                         <p>
                             Monitor and manage your medicine inventory
@@ -178,18 +233,14 @@ const MedicineDashboard = () => {
 
                         <button
                             className="inventory-btn"
-                            onClick={() =>
-                                navigate("/inventory")
-                            }
+                            onClick={() => navigate("/inventory")}
                         >
                             📦 Inventory
                         </button>
 
                         <button
                             className="add-medicine-btn"
-                            onClick={() =>
-                                navigate("/add-medicine")
-                            }
+                            onClick={() => navigate("/add-medicine")}
                         >
                             + Add Medicine
                         </button>
@@ -202,87 +253,66 @@ const MedicineDashboard = () => {
                 <div className="stats-grid">
 
                     <div className="stat-card">
-
-                        <div className="stat-icon">
-                            💊
-                        </div>
+                        <div className="stat-icon">💊</div>
 
                         <div>
-                            <p>
-                                Total Medicines
-                            </p>
-
-                            <h3>
-                                {totalMedicines}
-                            </h3>
+                            <p>Total Medicines</p>
+                            <h3>{totalMedicines}</h3>
                         </div>
-
                     </div>
 
 
                     <div className="stat-card">
-
-                        <div className="stat-icon">
-                            📦
-                        </div>
+                        <div className="stat-icon">📦</div>
 
                         <div>
-                            <p>
-                                Available Stock
-                            </p>
-
-                            <h3>
-                                {availableStock}
-                            </h3>
+                            <p>Available Stock</p>
+                            <h3>{availableStock}</h3>
                         </div>
-
                     </div>
 
 
                     <div className="stat-card">
-
-                        <div className="stat-icon">
-                            ⚠️
-                        </div>
+                        <div className="stat-icon">⚠️</div>
 
                         <div>
-                            <p>
-                                Low Stock
-                            </p>
-
-                            <h3>
-                                {lowStock}
-                            </h3>
+                            <p>Low Stock</p>
+                            <h3>{lowStock}</h3>
                         </div>
-
                     </div>
 
 
                     <div className="stat-card">
-
-                        <div className="stat-icon">
-                            ❌
-                        </div>
+                        <div className="stat-icon">❌</div>
 
                         <div>
-                            <p>
-                                Out of Stock
-                            </p>
-
-                            <h3>
-                                {outOfStock}
-                            </h3>
+                            <p>Out of Stock</p>
+                            <h3>{outOfStock}</h3>
                         </div>
-
                     </div>
 
                 </div>
 
 
-                <MedicineList
-                    medicines={medicines}
-                    onDelete={handleDelete}
-                />
+                {loading && (
+                    <p>Loading medicines...</p>
+                )}
+
+
+                {error && (
+                    <p className="error-message">
+                        {error}
+                    </p>
+                )}
+
+
+                {!loading && !error && (
+                    <MedicineList
+                        medicines={medicinesWithStock}
+                        onDelete={handleDelete}
+                        onRefresh={loadData}
+                    />
+                )}
 
             </main>
 

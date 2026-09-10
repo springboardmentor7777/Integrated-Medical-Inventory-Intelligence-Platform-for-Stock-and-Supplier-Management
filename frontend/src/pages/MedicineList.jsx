@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const MedicineList = ({ medicines, onDelete, onEdit }) => {
+const MedicineList = ({ medicines, onDelete }) => {
 
     const navigate = useNavigate();
 
@@ -9,18 +9,22 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
     const [category, setCategory] = useState("");
     const [stock, setStock] = useState("");
 
-    const getStockStatus = (quantity) => {
+    const getStockStatus = (medicine) => {
 
-        if (quantity === 0) {
+        if (medicine.quantity === 0) {
             return "Out of Stock";
         }
 
-        if (quantity <= 10) {
+        if (
+            medicine.reorderLevel !== undefined &&
+            medicine.quantity <= medicine.reorderLevel
+        ) {
             return "Low Stock";
         }
 
         return "Available";
     };
+
 
     const filteredMedicines = medicines.filter((medicine) => {
 
@@ -34,7 +38,7 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
             medicine.category.toLowerCase() ===
             category.toLowerCase();
 
-        const status = getStockStatus(medicine.quantity);
+        const status = getStockStatus(medicine);
 
         const matchesStock =
             stock === "" ||
@@ -47,14 +51,16 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
         );
     });
 
+
     const handleEdit = (medicine) => {
 
         navigate("/edit-medicine", {
             state: {
-                medicine: medicine
+                medicine
             }
         });
     };
+
 
     return (
         <section className="medicine-section">
@@ -71,6 +77,7 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
 
             </div>
 
+
             <div className="medicine-toolbar">
 
                 <input
@@ -83,6 +90,7 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
                     }
                 />
 
+
                 <select
                     className="filter-select"
                     value={category}
@@ -90,7 +98,6 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
                         setCategory(e.target.value)
                     }
                 >
-
                     <option value="">
                         All Categories
                     </option>
@@ -110,8 +117,8 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
                     <option value="injection">
                         Injection
                     </option>
-
                 </select>
+
 
                 <select
                     className="filter-select"
@@ -120,7 +127,6 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
                         setStock(e.target.value)
                     }
                 >
-
                     <option value="">
                         All Stock
                     </option>
@@ -136,10 +142,10 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
                     <option value="out of stock">
                         Out of Stock
                     </option>
-
                 </select>
 
             </div>
+
 
             <div className="medicine-table-container">
 
@@ -152,26 +158,26 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
                         <th>Category</th>
                         <th>Quantity</th>
                         <th>Price</th>
-                        <th>Expiry Date</th>
+                        <th>Manufacturer</th>
+                        <th>Reorder Level</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
 
                     </thead>
 
+
                     <tbody>
 
                     {filteredMedicines.length === 0 ? (
 
                         <tr>
-
                             <td
-                                colSpan="7"
+                                colSpan="8"
                                 className="empty-state"
                             >
                                 No medicines found
                             </td>
-
                         </tr>
 
                     ) : (
@@ -179,11 +185,10 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
                         filteredMedicines.map((medicine) => {
 
                             const status =
-                                getStockStatus(
-                                    medicine.quantity
-                                );
+                                getStockStatus(medicine);
 
                             return (
+
                                 <tr key={medicine.id}>
 
                                     <td>
@@ -205,7 +210,11 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
                                     </td>
 
                                     <td>
-                                        {medicine.expiryDate}
+                                        {medicine.manufacturer}
+                                    </td>
+
+                                    <td>
+                                        {medicine.reorderLevel}
                                     </td>
 
                                     <td>
@@ -228,9 +237,7 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
                                         <button
                                             className="edit-btn"
                                             onClick={() =>
-                                                handleEdit(
-                                                    medicine
-                                                )
+                                                handleEdit(medicine)
                                             }
                                         >
                                             Edit
@@ -250,8 +257,10 @@ const MedicineList = ({ medicines, onDelete, onEdit }) => {
                                     </td>
 
                                 </tr>
+
                             );
                         })
+
                     )}
 
                     </tbody>
