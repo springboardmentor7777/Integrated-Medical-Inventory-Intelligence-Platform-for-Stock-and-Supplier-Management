@@ -18,11 +18,18 @@ A comprehensive, full-stack **Medical Inventory Intelligence Platform** featurin
 - **Role-Based Access Control (RBAC)**: Support for `ADMIN`, `PHARMACIST`, `INVENTORY_MANAGER`, `DOCTOR`, and `NURSE` roles.
 - **Pre-seeded Credentials**: Auto-initialized accounts (`admin@medistock.com` / `admin123` and `pharmacist@medistock.com` / `admin123`).
 
-### 3. 📦 Core Modules
-- **Medicine & Inventory Management**: Live stock tracking, batch numbers, storage conditions, and low/out-of-stock indicators.
-- **Supplier & Purchase Orders**: Vendor metrics, delivery tracking, and automatic stock replenishment on order fulfillment.
-- **Stock Monitoring & Expiry Alerts**: Real-time ticker banner, critical alert badges, and expiry summary reports.
-- **Dashboard & Analytics**: Aggregated inventory valuation, category breakdown, and stock movement audit trails.
+### 2. 📦 Core Modules & Milestone Progress
+- **Milestone 1 (Week 1 & 2 — Architecture, Database & JWT Auth)**:
+  - Spring Boot 3.2.5 setup with JPA repositories, DTO validations, BCrypt, and JJWT security.
+  - Finalized 10 domain entities (`User`, `Role`, `Medicine`, `Category`, `Batch`, `Supplier`, `Inventory`, `StockLog`, `PurchaseOrder`, `PurchaseOrderItem`).
+  - Implemented JWT authentication endpoints (`/api/v1/auth/login`, `/api/v1/auth/register`, `/api/v1/auth/me`).
+  - Built React 18 + Vite frontend skeleton with `AuthContext` and protected routes.
+- **Milestone 2 (Week 3 & 4 — Inventory & Supplier Management)**:
+  - **Medicine Inventory APIs & Frontend**: Complete catalog, category management, batch tracking, instant search, multi-criteria filtering (`In Stock`, `Low Stock`, `Out of Stock`, `Expiring Soon`, `Expired`).
+  - **Supplier Management System**: Vendor directory CRUD, multi-item Purchase Order wizard, PO tracking workflow (`PENDING` ➔ `APPROVED` ➔ `SHIPPED` ➔ `DELIVERED`), and auto-restocking logic on delivery.
+  - **Stock Monitoring & Alerts**: Live threshold radar, stock adjustment engine (`Stock IN` / `Stock OUT`), audit log, and STOMP WebSocket real-time events.
+  - **Dashboard & Analytics**: 8 Admin Analytics Pillars, statutory valuation metrics, and CSV/JSON compliance reporting.
+
 
 ---
 
