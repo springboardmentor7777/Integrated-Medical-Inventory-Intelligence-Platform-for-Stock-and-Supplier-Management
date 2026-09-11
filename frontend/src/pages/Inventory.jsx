@@ -147,7 +147,11 @@ const Inventory = () => {
     // UPDATE STOCK
     // =========================
 
-    const updateStock = async (inventoryId, currentQuantity, change) => {
+    const updateStock = async (
+        inventoryId,
+        currentQuantity,
+        change
+    ) => {
 
         const newQuantity =
             currentQuantity + change;
@@ -223,7 +227,9 @@ const Inventory = () => {
             !newInventory.medicineId ||
             newInventory.quantity === ""
         ) {
-            alert("Please select a medicine and enter quantity.");
+            alert(
+                "Please select a medicine and enter quantity."
+            );
             return;
         }
 
@@ -404,21 +410,21 @@ const Inventory = () => {
 
                 <div className="user-section">
 
-                    <span>
-                        Welcome, {user?.name}
-                    </span>
+                    <div className="user-info">
 
-                    <span className="role-badge">
-                        {user?.role}
-                    </span>
+                        <span className="welcome-name">
+                            Welcome, {user?.name} ({user?.role})
+                        </span>
+
+                    </div>
 
                     <button
                         onClick={() =>
                             navigate("/medicines")
                         }
-                        className="logout-btn"
+                        className="back-button"
                     >
-                        Back to Medicines
+                        ← Back to Medicines
                     </button>
 
                 </div>
@@ -581,7 +587,7 @@ const Inventory = () => {
                                     setNewInventory({
                                         ...newInventory,
                                         medicineId:
-                                        e.target.value
+                                            e.target.value
                                     })
                                 }
                                 required
@@ -629,7 +635,7 @@ const Inventory = () => {
                                     setNewInventory({
                                         ...newInventory,
                                         quantity:
-                                        e.target.value
+                                            e.target.value
                                     })
                                 }
                                 required
@@ -676,10 +682,6 @@ const Inventory = () => {
                             <h2>
                                 Inventory Stock
                             </h2>
-
-                            <p>
-                                View and update current stock
-                            </p>
 
                         </div>
 
@@ -752,85 +754,85 @@ const Inventory = () => {
 
                                 <thead>
 
-                                <tr>
+                                    <tr>
 
-                                    <th>
-                                        Medicine
-                                    </th>
+                                        <th>
+                                            Medicine
+                                        </th>
 
-                                    <th>
-                                        Quantity
-                                    </th>
+                                        <th>
+                                            Quantity
+                                        </th>
 
-                                    <th>
-                                        Reorder Level
-                                    </th>
+                                        <th>
+                                            Reorder Level
+                                        </th>
 
-                                    <th>
-                                        Status
-                                    </th>
+                                        <th>
+                                            Status
+                                        </th>
 
-                                    <th>
-                                        Stock Action
-                                    </th>
+                                        <th>
+                                            Stock Action
+                                        </th>
 
-                                </tr>
+                                    </tr>
 
                                 </thead>
 
 
                                 <tbody>
 
-                                {filteredInventory.length === 0 ? (
+                                    {filteredInventory.length === 0 ? (
 
-                                    <tr>
+                                        <tr>
 
-                                        <td
-                                            colSpan="5"
-                                            className="empty-state"
-                                        >
-                                            No inventory found
-                                        </td>
-
-                                    </tr>
-
-                                ) : (
-
-                                    filteredInventory.map(
-                                        (item) => (
-
-                                            <tr
-                                                key={
-                                                    item.id
-                                                }
+                                            <td
+                                                colSpan="5"
+                                                className="empty-state"
                                             >
+                                                No inventory found
+                                            </td>
 
-                                                <td>
+                                        </tr>
 
-                                                    <strong>
+                                    ) : (
+
+                                        filteredInventory.map(
+                                            (item) => (
+
+                                                <tr
+                                                    key={
+                                                        item.id
+                                                    }
+                                                >
+
+                                                    <td>
+
+                                                        <strong>
+                                                            {
+                                                                item.medicineName
+                                                            }
+                                                        </strong>
+
+                                                    </td>
+
+
+                                                    <td>
                                                         {
-                                                            item.medicineName
+                                                            item.quantity
                                                         }
-                                                    </strong>
-
-                                                </td>
+                                                    </td>
 
 
-                                                <td>
-                                                    {
-                                                        item.quantity
-                                                    }
-                                                </td>
+                                                    <td>
+                                                        {
+                                                            item.reorderLevel
+                                                        }
+                                                    </td>
 
 
-                                                <td>
-                                                    {
-                                                        item.reorderLevel
-                                                    }
-                                                </td>
-
-
-                                                <td>
+                                                    <td>
 
                                                         <span
                                                             className={`stock-status ${getStatusClass(
@@ -842,63 +844,63 @@ const Inventory = () => {
                                                             )}
                                                         </span>
 
-                                                </td>
+                                                    </td>
 
 
-                                                <td>
+                                                    <td>
 
-                                                    <button
-                                                        className="edit-btn"
-                                                        onClick={() =>
-                                                            updateStock(
-                                                                item.id,
-                                                                item.quantity,
-                                                                -1
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            item.quantity ===
-                                                            0
-                                                        }
-                                                    >
-                                                        −
-                                                    </button>
+                                                        <button
+                                                            className="edit-btn"
+                                                            onClick={() =>
+                                                                updateStock(
+                                                                    item.id,
+                                                                    item.quantity,
+                                                                    -1
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                item.quantity ===
+                                                                0
+                                                            }
+                                                        >
+                                                            −
+                                                        </button>
 
 
-                                                    <span
-                                                        style={{
-                                                            margin: "0 12px",
-                                                            fontWeight:
-                                                                "600"
-                                                        }}
-                                                    >
+                                                        <span
+                                                            style={{
+                                                                margin: "0 12px",
+                                                                fontWeight:
+                                                                    "600"
+                                                            }}
+                                                        >
                                                             {
                                                                 item.quantity
                                                             }
                                                         </span>
 
 
-                                                    <button
-                                                        className="edit-btn"
-                                                        onClick={() =>
-                                                            updateStock(
-                                                                item.id,
-                                                                item.quantity,
-                                                                1
-                                                            )
-                                                        }
-                                                    >
-                                                        +
-                                                    </button>
+                                                        <button
+                                                            className="edit-btn"
+                                                            onClick={() =>
+                                                                updateStock(
+                                                                    item.id,
+                                                                    item.quantity,
+                                                                    1
+                                                                )
+                                                            }
+                                                        >
+                                                            +
+                                                        </button>
 
-                                                </td>
+                                                    </td>
 
-                                            </tr>
+                                                </tr>
 
+                                            )
                                         )
-                                    )
 
-                                )}
+                                    )}
 
                                 </tbody>
 

@@ -99,10 +99,10 @@ const AddMedicine = () => {
                 </div>
 
                 <button
-                    className="logout-btn"
+                    className="back-button"
                     onClick={() => navigate("/medicines")}
                 >
-                    Back to Dashboard
+                    ← Back to Dashboard
                 </button>
 
             </header>

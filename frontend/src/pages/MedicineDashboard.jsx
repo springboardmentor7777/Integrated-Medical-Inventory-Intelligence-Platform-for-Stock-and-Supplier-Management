@@ -197,17 +197,15 @@ const MedicineDashboard = () => {
 
                 <div className="user-section">
 
-                    <span>
-                        Welcome, {user?.name}
-                    </span>
-
-                    <span className="role-badge">
-                        {user?.role}
-                    </span>
+                    <div className="user-info">
+                        <span className="welcome-name">
+                            Welcome, {user?.name} ({user?.role})
+                        </span>
+                    </div>
 
                     <button
                         onClick={logout}
-                        className="logout-btn"
+                        className="logout-button"
                     >
                         Logout
                     </button>
@@ -242,7 +240,7 @@ const MedicineDashboard = () => {
                             className="add-medicine-btn"
                             onClick={() => navigate("/add-medicine")}
                         >
-                            + Add Medicine
+                            ➕ Add Medicine
                         </button>
 
                     </div>
@@ -253,42 +251,58 @@ const MedicineDashboard = () => {
                 <div className="stats-grid">
 
                     <div className="stat-card">
-                        <div className="stat-icon">💊</div>
+
+                        <div className="stat-icon">
+                            💊
+                        </div>
 
                         <div>
                             <p>Total Medicines</p>
                             <h3>{totalMedicines}</h3>
                         </div>
+
                     </div>
 
 
                     <div className="stat-card">
-                        <div className="stat-icon">📦</div>
+
+                        <div className="stat-icon">
+                            📦
+                        </div>
 
                         <div>
                             <p>Available Stock</p>
                             <h3>{availableStock}</h3>
                         </div>
+
                     </div>
 
 
                     <div className="stat-card">
-                        <div className="stat-icon">⚠️</div>
+
+                        <div className="stat-icon">
+                            ⚠️
+                        </div>
 
                         <div>
                             <p>Low Stock</p>
                             <h3>{lowStock}</h3>
                         </div>
+
                     </div>
 
 
                     <div className="stat-card">
-                        <div className="stat-icon">❌</div>
+
+                        <div className="stat-icon">
+                            ❌
+                        </div>
 
                         <div>
                             <p>Out of Stock</p>
                             <h3>{outOfStock}</h3>
                         </div>
+
                     </div>
 
                 </div>
