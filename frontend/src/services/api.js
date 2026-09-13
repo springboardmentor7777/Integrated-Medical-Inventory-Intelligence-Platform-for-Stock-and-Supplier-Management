@@ -113,7 +113,38 @@ const INITIAL_SUPPLIERS = [
     leadTimeDays: 7,
     totalOrders: 8,
     totalSpent: 12500.00
-  }
+  },{
+  id: 5,
+  name: 'MedCore Healthcare Pvt Ltd',
+  contactPerson: 'Priya Sharma',
+  email: 'sales@medcorehealthcare.com',
+  phone: '+91 98765 43210',
+  address: 'Plot 24, Industrial Area, Indore, MP',
+  taxId: 'IN-GST-27AABCM4521K1Z5',
+  paymentTerms: 'Net 45',
+  status: 'ACTIVE',
+  rating: 4.7,
+  onTimeDeliveryRate: 96.2,
+  leadTimeDays: 5,
+  totalOrders: 35,
+  totalSpent: 62500.00
+},
+{
+  id: 6,
+  name: 'Global Med Supplies Inc',
+  contactPerson: 'Michael Anderson',
+  email: 'orders@globalmedsupplies.com',
+  phone: '+1 (555) 678-2345',
+  address: '820 Medical Center Drive, Chicago, IL',
+  taxId: 'US-TAX-745821',
+  paymentTerms: 'Net 60',
+  status: 'ACTIVE',
+  rating: 4.5,
+  onTimeDeliveryRate: 94.8,
+  leadTimeDays: 7,
+  totalOrders: 22,
+  totalSpent: 38750.00
+}
 ];
 
 const INITIAL_MEDICINES = [
@@ -390,20 +421,34 @@ const INITIAL_PURCHASE_ORDERS = [
     ],
     notes: 'Cold-chain shipment container required.'
   },
-  {
-    id: 3,
-    poNumber: 'PO-2026-079',
-    supplierId: 2,
-    supplierName: 'Global Health Distribution',
-    orderDate: '2026-08-01',
-    expectedDeliveryDate: '2026-08-06',
-    status: 'DELIVERED',
-    totalAmount: 920.00,
-    items: [
-      { medicineName: 'Paracetamol 650mg (Dolo)', quantity: 200, unitPrice: 4.60, total: 920.00 }
-    ],
-    notes: 'Completed delivery received by Station #1.'
-  }
+,{
+  id: 4,
+  poNumber: 'PO-2026-080',
+  supplierId: 1,
+  supplierName: 'Apex Pharmaceuticals Ltd',
+  orderDate: '2026-08-04',
+  expectedDeliveryDate: '2026-08-09',
+  status: 'APPROVED',
+  totalAmount: 1450.00,
+  items: [
+    { medicineName: 'Amoxicillin 500mg', quantity: 250, unitPrice: 5.80, total: 1450.00 }
+  ],
+  notes: 'Purchase order approved and awaiting shipment.'
+},
+{
+  id: 5,
+  poNumber: 'PO-2026-081',
+  supplierId: 3,
+  supplierName: 'Global Med Supplies Inc',
+  orderDate: '2026-08-07',
+  expectedDeliveryDate: '2026-08-14',
+  status: 'PENDING',
+  totalAmount: 2100.00,
+  items: [
+    { medicineName: 'Azithromycin 500mg', quantity: 300, unitPrice: 7.00, total: 2100.00 }
+  ],
+  notes: 'New purchase order created for medicine restocking.'
+}
 ];
 
 const INITIAL_ADJUSTMENTS = [
