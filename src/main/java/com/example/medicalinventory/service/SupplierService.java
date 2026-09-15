@@ -45,4 +45,12 @@ public class SupplierService {
     public void deleteSupplier(Long id) {
         supplierRepository.deleteById(id);
     }
+
+    public List<Supplier> searchSuppliers(String name) {
+        return supplierRepository.findAll()
+                .stream()
+                .filter(supplier -> supplier.getSupplierName() != null
+                        && supplier.getSupplierName().toLowerCase().contains(name.toLowerCase()))
+                .toList();
+    }
 }
