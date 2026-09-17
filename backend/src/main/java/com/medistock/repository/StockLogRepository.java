@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface StockLogRepository extends JpaRepository<StockLog, Long> {
     List<StockLog> findByMedicineIdOrderByCreatedAtDesc(Long medicineId);
+    void deleteByMedicineId(Long medicineId);
     List<StockLog> findByType(StockMovementType type);
     List<StockLog> findTop50ByOrderByCreatedAtDesc();
 }

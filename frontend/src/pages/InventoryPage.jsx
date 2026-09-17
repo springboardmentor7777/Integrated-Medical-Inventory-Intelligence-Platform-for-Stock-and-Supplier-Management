@@ -186,8 +186,29 @@ export const InventoryPage = () => {
     }
   };
 
+  const openAddBatchModal = (medicineId = null) => {
+    const targetId = medicineId || (medicines.length > 0 ? medicines[0].id : '');
+    setBatchTargetMedId(targetId);
+    setBatchForm({
+      batchNumber: 'BAT-' + Math.floor(Math.random() * 90000 + 10000),
+      quantity: 50,
+      mfgDate: new Date().toISOString().split('T')[0],
+      expiryDate: new Date(Date.now() + 365 * 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      purchasePrice: 10.00
+    });
+    setShowBatchModal(true);
+  };
+
   const handleAddBatchSubmit = async (e) => {
     e.preventDefault();
+    if (!batchTargetMedId) {
+      showToast('error', 'Please select a medicine for the batch.');
+      return;
+    }
+    if (!batchForm.batchNumber || !batchForm.batchNumber.trim()) {
+      showToast('error', 'Batch number is required.');
+      return;
+    }
     try {
       await MedicineService.addBatch(batchTargetMedId, batchForm);
       showToast('success', `Batch ${batchForm.batchNumber} added! Stock synced.`);
@@ -243,7 +264,7 @@ export const InventoryPage = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={() => setShowBatchModal(true)} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+          <button onClick={() => openAddBatchModal()} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
             <Layers style={{ width: '16px', height: '16px' }} />
             <span>Add Batch</span>
           </button>
@@ -552,6 +573,8 @@ export const InventoryPage = () => {
           onClose={() => setIsAddModalOpen(false)}
           onSave={handleSaveMedicine}
           medicine={selectedMedicine}
+          categories={categories}
+          suppliers={suppliers}
         />
       )}
 

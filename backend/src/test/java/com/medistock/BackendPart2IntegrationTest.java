@@ -3,7 +3,10 @@ package com.medistock;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medistock.dto.auth.LoginRequest;
 import com.medistock.dto.auth.LoginResponse;
+import com.medistock.dto.category.CategoryRequest;
 import com.medistock.dto.inventory.StockUpdateRequest;
+import com.medistock.dto.medicine.BatchRequest;
+import com.medistock.dto.medicine.MedicineRequest;
 import com.medistock.dto.purchase.CreatePurchaseOrderRequest;
 import com.medistock.dto.purchase.PurchaseOrderItemRequest;
 import com.medistock.dto.supplier.SupplierRequest;
@@ -22,8 +25,6 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -54,7 +55,89 @@ public class BackendPart2IntegrationTest {
     }
 
     @Test
-    @DisplayName("1. Supplier CRUD operations work as expected")
+    @DisplayName("1. Category CRUD operations work as expected")
+    void testCategoryCrud() throws Exception {
+        // Create
+        CategoryRequest catReq = new CategoryRequest(
+                "Ophthalmic Solutions",
+                "CAT-OPH-" + System.currentTimeMillis() % 1000,
+                "Eye drops and ophthalmic medications",
+                "Cool place (8-15°C)"
+        );
+
+        MvcResult result = mockMvc.perform(post("/api/v1/categories")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(catReq)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.name").value("Ophthalmic Solutions"))
+                .andReturn();
+
+        // Get All
+        mockMvc.perform(get("/api/v1/categories")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    @DisplayName("2. Medicine CRUD, Search, and Batch Addition operations")
+    void testMedicineCrudAndBatches() throws Exception {
+        // Create medicine
+        MedicineRequest medReq = new MedicineRequest();
+        medReq.setName("Ciprofloxacin 500mg");
+        medReq.setCode("MED-CIPRO-" + System.currentTimeMillis() % 10000);
+        medReq.setCategoryId(1L);
+        medReq.setSupplierId(1L);
+        medReq.setDosageForm("Tablets");
+        medReq.setStorageCondition("Room Temperature (15-25°C)");
+        medReq.setDescription("Broad spectrum fluoroquinolone antibiotic");
+        medReq.setUnitPrice(18.50);
+        medReq.setReorderLevel(25);
+        medReq.setInitialQuantity(100);
+        medReq.setBatchNumber("BAT-CIP-001");
+        medReq.setExpiryDate(LocalDate.now().plusYears(2));
+
+        MvcResult createResult = mockMvc.perform(post("/api/v1/medicines")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(medReq)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.name").value("Ciprofloxacin 500mg"))
+                .andExpect(jsonPath("$.totalQuantity").value(100))
+                .andReturn();
+
+        Long createdMedId = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("id").asLong();
+
+        // Get All & Search
+        mockMvc.perform(get("/api/v1/medicines")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .param("search", "Ciprofloxacin"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].name").value("Ciprofloxacin 500mg"));
+
+        // Add Batch
+        BatchRequest batchReq = new BatchRequest(
+                "BAT-CIP-002",
+                50,
+                LocalDate.now().minusMonths(1),
+                LocalDate.now().plusMonths(18),
+                12.00
+        );
+
+        mockMvc.perform(post("/api/v1/medicines/" + createdMedId + "/batches")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(batchReq)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.totalQuantity").value(150));
+    }
+
+    @Test
+    @DisplayName("3. Supplier CRUD operations work as expected")
     void testSupplierCrud() throws Exception {
         // Create
         SupplierRequest req = new SupplierRequest();
@@ -65,14 +148,13 @@ public class BackendPart2IntegrationTest {
         req.setAddress("123 Med Park");
         req.setStatus("ACTIVE");
 
-        MvcResult result = mockMvc.perform(post("/api/v1/suppliers")
+        mockMvc.perform(post("/api/v1/suppliers")
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNumber())
-                .andExpect(jsonPath("$.name").value(req.getName()))
-                .andReturn();
+                .andExpect(jsonPath("$.name").value(req.getName()));
 
         // Get All
         mockMvc.perform(get("/api/v1/suppliers")
@@ -82,7 +164,7 @@ public class BackendPart2IntegrationTest {
     }
 
     @Test
-    @DisplayName("2. Purchase Order creation and status workflow")
+    @DisplayName("4. Purchase Order creation and status workflow")
     void testPurchaseOrderWorkflow() throws Exception {
         CreatePurchaseOrderRequest poReq = new CreatePurchaseOrderRequest();
         poReq.setSupplierId(1L);
@@ -96,14 +178,13 @@ public class BackendPart2IntegrationTest {
         item.setUnitPrice(12.50);
         poReq.setItems(Collections.singletonList(item));
 
-        MvcResult poRes = mockMvc.perform(post("/api/v1/purchases")
+        mockMvc.perform(post("/api/v1/purchases")
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(poReq)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.poNumber").exists())
-                .andExpect(jsonPath("$.status").value("PENDING"))
-                .andReturn();
+                .andExpect(jsonPath("$.status").value("PENDING"));
 
         // Query POs
         mockMvc.perform(get("/api/v1/purchases")
@@ -113,7 +194,7 @@ public class BackendPart2IntegrationTest {
     }
 
     @Test
-    @DisplayName("3. Inventory endpoints and stock adjustments")
+    @DisplayName("5. Inventory endpoints and stock adjustments")
     void testInventoryAndStockAdjustment() throws Exception {
         // List inventory
         mockMvc.perform(get("/api/v1/inventory")
@@ -149,7 +230,7 @@ public class BackendPart2IntegrationTest {
     }
 
     @Test
-    @DisplayName("4. Expiry monitoring endpoints")
+    @DisplayName("6. Expiry monitoring endpoints")
     void testExpiryEndpoints() throws Exception {
         mockMvc.perform(get("/api/v1/expiry/expiring")
                         .header("Authorization", "Bearer " + adminToken))
@@ -169,7 +250,7 @@ public class BackendPart2IntegrationTest {
     }
 
     @Test
-    @DisplayName("5. Dashboard aggregated stats endpoint")
+    @DisplayName("7. Dashboard aggregated stats endpoint")
     void testDashboardStats() throws Exception {
         mockMvc.perform(get("/api/v1/dashboard/stats")
                         .header("Authorization", "Bearer " + adminToken))

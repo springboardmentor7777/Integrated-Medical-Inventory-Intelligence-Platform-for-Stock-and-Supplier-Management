@@ -64,6 +64,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/health").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -81,6 +82,23 @@ public class SecurityConfig {
 
                         // ── Dashboard (any authenticated user can view) ──────────────────
                         .requestMatchers(HttpMethod.GET, "/api/v1/dashboard/**").authenticated()
+
+                        // ── Medicines — READ: all authenticated; WRITE/DELETE: ADMIN/INV_MGR/PHARMACIST ──
+                        .requestMatchers(HttpMethod.GET, "/api/v1/medicines/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/medicines/**")
+                                .hasAnyRole("ADMIN", "INVENTORY_MANAGER", "PHARMACIST")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/medicines/**")
+                                .hasAnyRole("ADMIN", "INVENTORY_MANAGER", "PHARMACIST")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/medicines/**")
+                                .hasAnyRole("ADMIN", "INVENTORY_MANAGER", "PHARMACIST")
+
+                        // ── Categories — READ: all authenticated; WRITE: ADMIN/INV_MGR; DELETE: ADMIN ──
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/categories/**")
+                                .hasAnyRole("ADMIN", "INVENTORY_MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/categories/**")
+                                .hasAnyRole("ADMIN", "INVENTORY_MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**").hasRole("ADMIN")
 
                         // ── Inventory — READ: all authenticated; WRITE: ADMIN/INV_MGR/PHARMACIST ──
                         .requestMatchers(HttpMethod.GET, "/api/v1/inventory/**").authenticated()

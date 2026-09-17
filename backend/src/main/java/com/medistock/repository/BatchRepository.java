@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 public interface BatchRepository extends JpaRepository<Batch, Long> {
     List<Batch> findByMedicineId(Long medicineId);
+    void deleteByMedicineId(Long medicineId);
     List<Batch> findByExpiryStatus(ExpiryStatus expiryStatus);
     List<Batch> findByExpiryDateBefore(LocalDate date);
     List<Batch> findByExpiryDateBetween(LocalDate from, LocalDate to);

@@ -812,10 +812,20 @@ export const UserService = {
 export const MedicineService = {
   getAll: async (params = {}) => {
     try {
-      const res = await api.get('/inventory');
+      const res = await api.get('/medicines', { params });
       if (Array.isArray(res.data) && res.data.length > 0) {
+        setStorage('medistock_medicines_db', res.data);
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
+
+    try {
+      const invRes = await api.get('/inventory');
+      if (Array.isArray(invRes.data) && invRes.data.length > 0) {
         const localMeds = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
-        const mapped = res.data.map(inv => {
+        const mapped = invRes.data.map(inv => {
           const matched = localMeds.find(m => m.id === inv.medicineId || m.name === inv.medicineName);
           return {
             id: inv.medicineId || inv.id,
@@ -837,29 +847,9 @@ export const MedicineService = {
             batches: matched?.batches || []
           };
         });
-        
-        let filtered = [...mapped];
-        if (params.search) {
-          const q = params.search.toLowerCase();
-          filtered = filtered.filter(m => 
-            m.name?.toLowerCase().includes(q) || 
-            m.code?.toLowerCase().includes(q) || 
-            m.categoryName?.toLowerCase().includes(q) ||
-            m.supplierName?.toLowerCase().includes(q)
-          );
-        }
-        if (params.categoryId && params.categoryId !== 'ALL') {
-          filtered = filtered.filter(m => m.categoryId === Number(params.categoryId));
-        }
-        if (params.stockStatus && params.stockStatus !== 'ALL') {
-          filtered = filtered.filter(m => m.stockStatus === params.stockStatus);
-        }
-        if (params.expiryStatus && params.expiryStatus !== 'ALL') {
-          filtered = filtered.filter(m => m.expiryStatus === params.expiryStatus);
-        }
-        return filtered;
+        return mapped;
       }
-    } catch (err) {
+    } catch (e) {
       // Fallback
     }
 
@@ -870,8 +860,8 @@ export const MedicineService = {
     if (params.search) {
       const q = params.search.toLowerCase();
       filtered = filtered.filter(m => 
-        m.name.toLowerCase().includes(q) || 
-        m.code.toLowerCase().includes(q) || 
+        m.name?.toLowerCase().includes(q) || 
+        m.code?.toLowerCase().includes(q) || 
         m.categoryName?.toLowerCase().includes(q) ||
         m.supplierName?.toLowerCase().includes(q)
       );
@@ -889,15 +879,45 @@ export const MedicineService = {
   },
 
   getById: async (id) => {
+    try {
+      const res = await api.get(`/medicines/${id}`);
+      if (res.data) return res.data;
+    } catch (err) {
+      // Fallback
+    }
     await delay();
     const medicines = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
     return medicines.find(m => m.id === Number(id)) || medicines[0];
   },
 
   create: async (data) => {
+    try {
+      const payload = {
+        name: data.name,
+        code: data.code,
+        categoryId: Number(data.categoryId || 1),
+        supplierId: data.supplierId ? Number(data.supplierId) : 1,
+        dosageForm: data.dosageForm || 'Tablets',
+        storageCondition: data.storageCondition || 'Room Temperature (15-25°C)',
+        description: data.description || '',
+        unitPrice: Number(data.unitPrice || 0),
+        reorderLevel: Number(data.reorderLevel || 20),
+        initialQuantity: Number(data.totalQuantity !== undefined ? data.totalQuantity : (data.initialQuantity || 0)),
+        batchNumber: data.batchNumber || ('BAT-' + Math.floor(Math.random() * 90000 + 10000)),
+        expiryDate: data.nearestExpiryDate || data.expiryDate || '2027-12-31'
+      };
+      const res = await api.post('/medicines', payload);
+      if (res.data) {
+        AuthService.logAudit('MEDICINE_CREATED', 'Pharmacist', 'PHARMACIST', `Added new medicine via API: ${res.data.name}`);
+        return res.data;
+      }
+    } catch (err) {
+      console.warn('Backend API create failed, using local storage:', err);
+    }
+
     await delay();
     const medicines = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
-    const initialQty = Number(data.initialQuantity || 0);
+    const initialQty = Number(data.totalQuantity || data.initialQuantity || 0);
     const reorderLvl = Number(data.reorderLevel || 20);
     
     let stockStatus = 'IN_STOCK';
@@ -909,7 +929,7 @@ export const MedicineService = {
       batchNumber: data.batchNumber,
       quantity: initialQty,
       mfgDate: data.mfgDate || '2025-01-01',
-      expiryDate: data.expiryDate || '2027-12-31',
+      expiryDate: data.expiryDate || data.nearestExpiryDate || '2027-12-31',
       purchasePrice: Number(data.purchasePrice || (data.unitPrice * 0.7)),
       expiryStatus: 'VALID'
     }] : [];
@@ -919,9 +939,9 @@ export const MedicineService = {
       name: data.name,
       code: data.code || 'MED-' + Math.floor(Math.random() * 1000),
       categoryId: Number(data.categoryId || 1),
-      categoryName: data.categoryName || 'General',
+      categoryName: data.newCategoryName || data.categoryName || 'General',
       supplierId: Number(data.supplierId || 1),
-      supplierName: data.supplierName || 'Apex Pharmaceuticals Ltd',
+      supplierName: data.newSupplierName || data.supplierName || 'Apex Pharmaceuticals Ltd',
       dosageForm: data.dosageForm || 'Tablets',
       storageCondition: data.storageCondition || 'Room Temperature (15-25°C)',
       description: data.description || '',
@@ -929,8 +949,8 @@ export const MedicineService = {
       reorderLevel: reorderLvl,
       totalQuantity: initialQty,
       stockStatus: stockStatus,
-      expiryStatus: 'VALID',
-      nearestExpiryDate: data.expiryDate || '2027-12-31',
+      expiryStatus: data.expiryStatus || 'VALID',
+      nearestExpiryDate: data.nearestExpiryDate || data.expiryDate || '2027-12-31',
       batches: batch
     };
 
@@ -941,6 +961,26 @@ export const MedicineService = {
   },
 
   update: async (id, data) => {
+    try {
+      const payload = {
+        name: data.name,
+        code: data.code,
+        categoryId: data.categoryId ? Number(data.categoryId) : undefined,
+        supplierId: data.supplierId ? Number(data.supplierId) : undefined,
+        dosageForm: data.dosageForm,
+        storageCondition: data.storageCondition,
+        description: data.description,
+        unitPrice: data.unitPrice ? Number(data.unitPrice) : undefined,
+        reorderLevel: data.reorderLevel ? Number(data.reorderLevel) : undefined
+      };
+      const res = await api.put(`/medicines/${id}`, payload);
+      if (res.data) {
+        return res.data;
+      }
+    } catch (err) {
+      console.warn('Backend API update fallback:', err);
+    }
+
     await delay();
     const medicines = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
     const idx = medicines.findIndex(m => m.id === Number(id));
@@ -968,6 +1008,12 @@ export const MedicineService = {
   },
 
   delete: async (id) => {
+    try {
+      await api.delete(`/medicines/${id}`);
+    } catch (err) {
+      console.warn('Backend API delete fallback:', err);
+    }
+
     await delay();
     let medicines = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
     const target = medicines.find(m => m.id === Number(id));
@@ -978,22 +1024,40 @@ export const MedicineService = {
   },
 
   addBatch: async (medicineId, batchData) => {
+    const medId = Number(medicineId);
+    const payload = {
+      batchNumber: batchData.batchNumber || ('BAT-' + Math.floor(Math.random() * 90000 + 10000)),
+      quantity: Number(batchData.quantity || 0),
+      mfgDate: batchData.mfgDate || '2025-01-01',
+      expiryDate: batchData.expiryDate || '2027-12-31',
+      purchasePrice: Number(batchData.purchasePrice || 10)
+    };
+
+    try {
+      const res = await api.post(`/medicines/${medId}/batches`, payload);
+      if (res.data) {
+        return res.data;
+      }
+    } catch (err) {
+      console.warn('Backend API addBatch fallback:', err);
+    }
+
     await delay();
     const medicines = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
-    const idx = medicines.findIndex(m => m.id === Number(medicineId));
+    const idx = medicines.findIndex(m => m.id === medId);
     if (idx !== -1) {
       const newBatch = {
         id: Date.now(),
-        batchNumber: batchData.batchNumber || 'BAT-' + Date.now(),
-        quantity: Number(batchData.quantity || 0),
-        mfgDate: batchData.mfgDate || '2025-01-01',
-        expiryDate: batchData.expiryDate || '2027-12-31',
-        purchasePrice: Number(batchData.purchasePrice || 10),
+        batchNumber: payload.batchNumber,
+        quantity: payload.quantity,
+        mfgDate: payload.mfgDate,
+        expiryDate: payload.expiryDate,
+        purchasePrice: payload.purchasePrice,
         expiryStatus: 'VALID'
       };
       medicines[idx].batches = medicines[idx].batches || [];
       medicines[idx].batches.push(newBatch);
-      medicines[idx].totalQuantity = medicines[idx].batches.reduce((sum, b) => sum + Number(b.quantity), 0);
+      medicines[idx].totalQuantity = (medicines[idx].totalQuantity || 0) + payload.quantity;
       
       if (medicines[idx].totalQuantity <= 0) medicines[idx].stockStatus = 'OUT_OF_STOCK';
       else if (medicines[idx].totalQuantity <= medicines[idx].reorderLevel) medicines[idx].stockStatus = 'LOW_STOCK';
@@ -1008,6 +1072,15 @@ export const MedicineService = {
 
   // Categories
   getCategories: async () => {
+    try {
+      const res = await api.get('/categories');
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
+
     await delay();
     const categories = getStorage('medistock_categories_db', INITIAL_CATEGORIES);
     const medicines = getStorage('medistock_medicines_db', INITIAL_MEDICINES);
@@ -1018,6 +1091,15 @@ export const MedicineService = {
   },
 
   createCategory: async (catData) => {
+    try {
+      const res = await api.post('/categories', catData);
+      if (res.data) {
+        return res.data;
+      }
+    } catch (err) {
+      // Fallback
+    }
+
     await delay();
     const categories = getStorage('medistock_categories_db', INITIAL_CATEGORIES);
     const newCat = {
@@ -1034,6 +1116,13 @@ export const MedicineService = {
   },
 
   deleteCategory: async (id) => {
+    try {
+      await api.delete(`/categories/${id}`);
+      return { success: true };
+    } catch (err) {
+      // Fallback
+    }
+
     await delay();
     let categories = getStorage('medistock_categories_db', INITIAL_CATEGORIES);
     categories = categories.filter(c => c.id !== Number(id));
