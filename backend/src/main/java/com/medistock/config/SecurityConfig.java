@@ -105,6 +105,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/inventory/**")
                                 .hasAnyRole("ADMIN", "INVENTORY_MANAGER", "PHARMACIST")
 
+                        // ── Medicines — READ/WRITE endpoints used by the inventory UI ──
+                        .requestMatchers(HttpMethod.GET, "/api/v1/medicines/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/medicines").hasAnyRole("ADMIN", "INVENTORY_MANAGER", "PHARMACIST")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/medicines/**").hasAnyRole("ADMIN", "INVENTORY_MANAGER", "PHARMACIST")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/medicines/**").hasAnyRole("ADMIN", "INVENTORY_MANAGER")
+
+                        // ── Categories — inventory catalog support ──
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/categories").hasAnyRole("ADMIN", "INVENTORY_MANAGER", "PHARMACIST")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/categories/**").hasAnyRole("ADMIN", "INVENTORY_MANAGER", "PHARMACIST")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**").hasAnyRole("ADMIN", "INVENTORY_MANAGER")
+
                         // ── Suppliers — READ: all authenticated; WRITE: ADMIN/INV_MGR; DELETE: ADMIN ──
                         .requestMatchers(HttpMethod.GET, "/api/v1/suppliers/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/suppliers/**")
