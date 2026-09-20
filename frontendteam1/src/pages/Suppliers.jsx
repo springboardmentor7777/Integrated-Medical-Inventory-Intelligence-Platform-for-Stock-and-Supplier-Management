@@ -42,10 +42,13 @@ const canDelete =
 
   const loadSuppliers = async () => {
     if (!token) {
+      setError("Please login again.");
+      setLoading(false);
       return;
     }
 
     try {
+
       setLoading(true);
       setError("");
 
@@ -62,6 +65,7 @@ const canDelete =
         setError("Unable to load suppliers.");
       }
     } finally {
+
       setLoading(false);
     }
   };
@@ -214,11 +218,6 @@ const canDelete =
         )}
       </div>
 
-      {error && (
-        <p className="error-message">
-          {error}
-        </p>
-      )}
 
       {showForm && canEdit && (
         <div className="supplier-form-card">
@@ -311,8 +310,11 @@ const canDelete =
       <div className="supplier-table-card">
 
         <h2>Suppliers</h2>
-
-        {loading ? (
+        {error ? (
+            <p className="error-message">
+              {error}
+            </p>
+        ) : loading ? (
           <p className="status-message">
             Loading suppliers...
           </p>

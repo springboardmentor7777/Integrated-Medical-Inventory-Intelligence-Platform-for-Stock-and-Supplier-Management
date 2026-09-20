@@ -10,13 +10,13 @@ public class Supplier {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "supplier_name", nullable = false, length = 100)
     private String name;
 
     @Column(length = 100)
     private String email;
 
-    @Column(length = 20)
+    @Column(name = "contact_number", length = 20)
     private String phone;
 
     @Column(length = 255)

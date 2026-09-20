@@ -10,6 +10,7 @@ import {
   updateMedicine,
   deleteMedicine,
 } from "../services/medicineService";
+import { getInventory } from "../services/inventoryService";
 import "../styles/Medicines.css";
 
 function daysUntil(dateString) {
@@ -33,6 +34,7 @@ export default function Medicines() {
   const navigate = useNavigate();
 
   const [medicines, setMedicines] = useState([]);
+  const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -54,6 +56,9 @@ export default function Medicines() {
     try {
       const data = await getMedicines(token);
       setMedicines(Array.isArray(data) ? data : []);
+
+      const inventoryData = await getInventory(token);
+      setInventory(Array.isArray(inventoryData) ? inventoryData : []);
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -116,22 +121,32 @@ export default function Medicines() {
   }
 
   const columns = [
-    { key: "name", header: "Name" },
+    { key: "medicineName", header: "Name" },
     { key: "category", header: "Category" },
     {
-      key: "supplierName",
+      key: "supplier",
       header: "Supplier",
-      render: (row) => row.supplierName || "—",
+      render: (row) => row.supplier?.name || "—",
     },
     {
       key: "quantity",
       header: "Quantity",
       render: (row) => {
-        const low = Number(row.quantity) <= 10;
+        const stock = inventory.find(
+            (item) => item.medicine?.id === row.id
+        );
+
+        const quantity = stock?.quantity ?? row.quantity ?? 0;
+        const low = Number(quantity) <= 10;
+
         return (
-          <span className={low ? "medicine-badge medicine-badge-warning" : undefined}>
-            {row.quantity}
-          </span>
+            <span
+                className={
+                  low ? "medicine-badge medicine-badge-warning" : undefined
+                }
+            >
+        {quantity}
+      </span>
         );
       },
     },

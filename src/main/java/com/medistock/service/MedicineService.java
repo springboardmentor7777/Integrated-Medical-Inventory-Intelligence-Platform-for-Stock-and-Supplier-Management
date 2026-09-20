@@ -1,4 +1,4 @@
-package com.medistock.service;
+ package com.medistock.service;
 
 import com.medistock.dto.MedicineRequest;
 import com.medistock.entity.Medicine;
@@ -15,7 +15,10 @@ public class MedicineService {
     private final MedicineRepository medicineRepository;
     private final SupplierRepository supplierRepository;
 
-    public MedicineService(MedicineRepository medicineRepository, SupplierRepository supplierRepository) {
+    public MedicineService(
+            MedicineRepository medicineRepository,
+            SupplierRepository supplierRepository) {
+
         this.medicineRepository = medicineRepository;
         this.supplierRepository = supplierRepository;
     }
@@ -32,10 +35,15 @@ public class MedicineService {
 
     public Medicine getMedicineById(Integer id) {
         return medicineRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Medicine not found with id: " + id));
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Medicine not found with id: " + id));
     }
 
-    public Medicine updateMedicine(Integer id, MedicineRequest request) {
+    public Medicine updateMedicine(
+            Integer id,
+            MedicineRequest request) {
+
         Medicine medicine = getMedicineById(id);
         mapRequestToEntity(request, medicine);
         return medicineRepository.save(medicine);
@@ -46,7 +54,10 @@ public class MedicineService {
         medicineRepository.delete(medicine);
     }
 
-    private void mapRequestToEntity(MedicineRequest request, Medicine medicine) {
+    private void mapRequestToEntity(
+            MedicineRequest request,
+            Medicine medicine) {
+
         medicine.setMedicineName(request.getMedicineName());
         medicine.setBatchNumber(request.getBatchNumber());
         medicine.setCategory(request.getCategory());
@@ -56,9 +67,16 @@ public class MedicineService {
         medicine.setPrice(request.getPrice());
 
         if (request.getSupplierId() != null) {
-            Supplier supplier = supplierRepository.findById(request.getSupplierId())
-                    .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + request.getSupplierId()));
+
+            Supplier supplier = supplierRepository
+                    .findById(request.getSupplierId())
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Supplier not found with id: "
+                                            + request.getSupplierId()));
+
             medicine.setSupplier(supplier);
         }
     }
 }
+

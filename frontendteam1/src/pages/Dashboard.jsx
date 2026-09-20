@@ -70,11 +70,14 @@ function Dashboard() {
             <p>Manage and view medicines.</p>
           </div>
 
-          <div className="dashboard-card">
-            <div className="card-icon">📦</div>
-            <h3>Inventory</h3>
-            <p>Track your medicine stock.</p>
-          </div>
+            <div
+                className="dashboard-card clickable-card"
+                onClick={() => navigate("/inventory")}
+            >
+                <div className="card-icon">📦</div>
+                <h3>Inventory</h3>
+                <p>Track your medicine stock.</p>
+            </div>
 
 <div
   className="dashboard-card clickable-card"
