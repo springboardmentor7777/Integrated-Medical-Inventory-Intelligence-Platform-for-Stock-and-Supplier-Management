@@ -27,14 +27,16 @@ function Suppliers() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
- const role = user?.role?.toUpperCase();
+  const [searchTerm, setSearchTerm] = useState("");
 
-const canEdit =
-  role === "ADMIN" ||
-  role === "PHARMACIST";
+  const role = user?.role?.toUpperCase();
 
-const canDelete =
-  role === "ADMIN";
+  const canEdit =
+    role === "ADMIN" ||
+    role === "PHARMACIST";
+
+  const canDelete =
+    role === "ADMIN";
 
   useEffect(() => {
     loadSuppliers();
@@ -48,24 +50,29 @@ const canDelete =
     }
 
     try {
-
       setLoading(true);
       setError("");
 
       const data = await getSuppliers(token);
-      setSuppliers(Array.isArray(data) ? data : []);
+
+      setSuppliers(
+        Array.isArray(data) ? data : []
+      );
     } catch (error) {
       console.error(error);
 
       if (error.response?.status === 401) {
-        setError("Your session is invalid. Please login again.");
+        setError(
+          "Your session is invalid. Please login again."
+        );
       } else if (error.response?.status === 403) {
-        setError("You do not have permission to view suppliers.");
+        setError(
+          "You do not have permission to view suppliers."
+        );
       } else {
         setError("Unable to load suppliers.");
       }
     } finally {
-
       setLoading(false);
     }
   };
@@ -100,7 +107,9 @@ const canDelete =
 
         setSuppliers((prev) =>
           prev.map((item) =>
-            item.id === editingId ? updated : item
+            item.id === editingId
+              ? updated
+              : item
           )
         );
       } else {
@@ -124,7 +133,9 @@ const canDelete =
           "You do not have permission for this action."
         );
       } else if (error.response?.status === 400) {
-        setError("Please check the supplier details.");
+        setError(
+          "Please check the supplier details."
+        );
       } else {
         setError("Unable to save supplier.");
       }
@@ -195,13 +206,64 @@ const canDelete =
     setShowForm(false);
   };
 
+  /* =========================================================
+     SUPPLIER STATISTICS
+     ========================================================= */
+
+  const totalSuppliers = suppliers.length;
+
+  const activeSuppliers = suppliers.length;
+
+  const citiesCovered = new Set(
+    suppliers
+      .map((item) => item.address?.trim())
+      .filter(Boolean)
+  ).size;
+
+  const supplierRecords = suppliers.length;
+
+  /* =========================================================
+     SUPPLIER SEARCH
+     ========================================================= */
+
+  const filteredSuppliers = suppliers.filter((item) => {
+    const search = searchTerm
+      .toLowerCase()
+      .trim();
+
+    if (!search) {
+      return true;
+    }
+
+    return (
+      item.name
+        ?.toLowerCase()
+        .includes(search) ||
+      item.email
+        ?.toLowerCase()
+        .includes(search) ||
+      item.phone
+        ?.toLowerCase()
+        .includes(search) ||
+      item.address
+        ?.toLowerCase()
+        .includes(search)
+    );
+  });
+
   return (
     <div className="supplier-page">
+
+      {/* =====================================================
+          HEADER
+          ===================================================== */}
 
       <div className="supplier-header">
         <div>
           <h1>Supplier Management</h1>
-          <p>Manage your medicine suppliers</p>
+          <p>
+            Manage your medicine suppliers
+          </p>
         </div>
 
         {canEdit && (
@@ -218,6 +280,69 @@ const canDelete =
         )}
       </div>
 
+      {/* =====================================================
+          STATISTICS
+          ===================================================== */}
+
+      <div className="supplier-stats">
+
+        <div className="supplier-stat-card">
+          <div className="supplier-stat-icon">
+            🏢
+          </div>
+
+          <div>
+            <span>Total Suppliers</span>
+            <strong>
+              {totalSuppliers}
+            </strong>
+          </div>
+        </div>
+
+        <div className="supplier-stat-card">
+          <div className="supplier-stat-icon">
+            ✓
+          </div>
+
+          <div>
+            <span>Active Suppliers</span>
+            <strong>
+              {activeSuppliers}
+            </strong>
+          </div>
+        </div>
+
+        <div className="supplier-stat-card">
+          <div className="supplier-stat-icon">
+            📍
+          </div>
+
+          <div>
+            <span>Cities Covered</span>
+            <strong>
+              {citiesCovered}
+            </strong>
+          </div>
+        </div>
+
+        <div className="supplier-stat-card">
+          <div className="supplier-stat-icon">
+            📦
+          </div>
+
+          <div>
+            <span>Supplier Records</span>
+            <strong>
+              {supplierRecords}
+            </strong>
+          </div>
+        </div>
+
+      </div>
+
+      {/* =====================================================
+          ADD / EDIT FORM
+          ===================================================== */}
 
       {showForm && canEdit && (
         <div className="supplier-form-card">
@@ -231,7 +356,9 @@ const canDelete =
           <form onSubmit={handleSubmit}>
 
             <div className="form-group">
-              <label>Supplier Name</label>
+              <label>
+                Supplier Name
+              </label>
 
               <input
                 type="text"
@@ -244,7 +371,9 @@ const canDelete =
             </div>
 
             <div className="form-group">
-              <label>Email</label>
+              <label>
+                Email
+              </label>
 
               <input
                 type="email"
@@ -256,7 +385,9 @@ const canDelete =
             </div>
 
             <div className="form-group">
-              <label>Phone</label>
+              <label>
+                Phone
+              </label>
 
               <input
                 type="text"
@@ -268,7 +399,9 @@ const canDelete =
             </div>
 
             <div className="form-group">
-              <label>Address</label>
+              <label>
+                Address
+              </label>
 
               <input
                 type="text"
@@ -304,16 +437,59 @@ const canDelete =
             </div>
 
           </form>
+
         </div>
       )}
 
+      {/* =====================================================
+          SUPPLIER TABLE
+          ===================================================== */}
+
       <div className="supplier-table-card">
 
-        <h2>Suppliers</h2>
-        {error ? (
-            <p className="error-message">
-              {error}
+        <div className="supplier-table-heading">
+
+          <div>
+            <h2>Suppliers</h2>
+
+            <p>
+              Search and manage your supplier network
             </p>
+          </div>
+
+          <div className="supplier-search">
+
+            <span>⌕</span>
+
+            <input
+              type="text"
+              placeholder="Search suppliers..."
+              value={searchTerm}
+              onChange={(event) =>
+                setSearchTerm(event.target.value)
+              }
+            />
+
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() =>
+                  setSearchTerm("")
+                }
+                aria-label="Clear search"
+              >
+                ×
+              </button>
+            )}
+
+          </div>
+
+        </div>
+
+        {error ? (
+          <p className="error-message">
+            {error}
+          </p>
         ) : loading ? (
           <p className="status-message">
             Loading suppliers...
@@ -322,10 +498,15 @@ const canDelete =
           <p className="empty-message">
             No suppliers found.
           </p>
+        ) : filteredSuppliers.length === 0 ? (
+          <p className="empty-message">
+            No suppliers match "{searchTerm}".
+          </p>
         ) : (
           <div className="table-container">
 
             <table>
+
               <thead>
                 <tr>
                   <th>ID</th>
@@ -338,46 +519,57 @@ const canDelete =
               </thead>
 
               <tbody>
-                {suppliers.map((item) => (
+
+                {filteredSuppliers.map((item) => (
                   <tr key={item.id}>
 
-                    <td>{item.id}</td>
-                    <td>{item.name}</td>
-                    <td>{item.email || "N/A"}</td>
-                    <td>{item.phone || "N/A"}</td>
-                    <td>{item.address || "N/A"}</td>
+                    <td>
+                      {item.id}
+                    </td>
 
                     <td>
-                      {canEdit && (
-                        <button
-                          className="edit-button"
-                          onClick={() =>
-                            handleEdit(item)
-                          }
-                        >
-                          Edit
-                        </button>
-                      )}
+                      {item.name}
+                    </td>
 
-                      {canDelete && (
-                        <button
-                          className="delete-button"
-                          onClick={() =>
-                            handleDelete(item.id)
-                          }
-                        >
-                          Delete
-                        </button>
-                      )}
+                    <td>
+                      {item.email || "N/A"}
+                    </td>
 
-                      {!canEdit && !canDelete && (
-                        <span>View only</span>
-                      )}
+                    <td>
+                      {item.phone || "N/A"}
+                    </td>
+
+                    <td>
+                      {item.address || "N/A"}
+                    </td>
+
+                    <td>
+
+                      <button
+                        className="edit-button"
+                        onClick={() =>
+                          handleEdit(item)
+                        }
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="delete-button"
+                        onClick={() =>
+                          handleDelete(item.id)
+                        }
+                      >
+                        Delete
+                      </button>
+
                     </td>
 
                   </tr>
                 ))}
+
               </tbody>
+
             </table>
 
           </div>
@@ -390,3 +582,4 @@ const canDelete =
 }
 
 export default Suppliers;
+

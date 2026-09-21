@@ -5,11 +5,11 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(
-    localStorage.getItem("token")
+      localStorage.getItem("token")
   );
 
   const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user")) || null
+      JSON.parse(localStorage.getItem("user")) || null
   );
 
   // Verify the stored JWT when the application loads
@@ -24,21 +24,29 @@ export function AuthProvider({ children }) {
       try {
         const currentUser = await getCurrentUser(storedToken);
 
-        // Keep the role from localStorage because /me currently
-        // returns only the email.
+        // Keep saved user information because /me currently
+        // returns only limited user information.
         const storedUser = JSON.parse(
-          localStorage.getItem("user")
+            localStorage.getItem("user")
         );
 
         const userData = {
+          name: storedUser?.name || null,
           email: currentUser.email,
           role: storedUser?.role || null,
         };
 
-        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem(
+            "user",
+            JSON.stringify(userData)
+        );
+
         setUser(userData);
       } catch (error) {
-        console.error("Token verification failed:", error);
+        console.error(
+            "Token verification failed:",
+            error
+        );
 
         // JWT is invalid/expired, so log the user out
         localStorage.removeItem("token");
@@ -56,11 +64,15 @@ export function AuthProvider({ children }) {
     localStorage.setItem("token", loginData.token);
 
     const userData = {
+      name: loginData.name,
       email: loginData.email,
       role: loginData.role,
     };
 
-    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem(
+        "user",
+        JSON.stringify(userData)
+    );
 
     setToken(loginData.token);
     setUser(userData);
@@ -75,17 +87,17 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        token,
-        user,
-        login,
-        logout,
-        isAuthenticated: !!token,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider
+          value={{
+            token,
+            user,
+            login,
+            logout,
+            isAuthenticated: !!token,
+          }}
+      >
+        {children}
+      </AuthContext.Provider>
   );
 }
 
