@@ -27,7 +27,6 @@ import {
 import authFetch from "../services/authFetch";
 import { useAuth } from "../context/useAuth";
 import { getDaysUntilExpiry } from "../utils/expiryUtils";
-import "./MainDashboard.css";
 
 const API_URL = "http://localhost:8082/api";
 
@@ -179,32 +178,32 @@ const MainDashboard = () => {
   ];
 
   return (
-    <div className="main-dashboard">
-      <main className="dashboard-content">
-        <header className="dashboard-topbar">
+    <div className="min-h-screen bg-slate-50 text-slate-800">
+      <main className="min-w-0 flex-1 px-4 py-6 md:px-7 md:py-8">
+        <header className="mb-6 flex flex-col items-start justify-between gap-5 md:flex-row md:items-start">
           <div>
-            <p className="eyebrow">MEDICAL INVENTORY MANAGEMENT</p>
+            <p className="mb-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-blue-600">MEDICAL INVENTORY MANAGEMENT</p>
 
             <h1>Dashboard</h1>
 
-            <p className="welcome-text">
+            <p className="mt-1.5 text-sm text-slate-500">
               Welcome back, {user?.name || "User"}. Here is your inventory
               overview.
             </p>
           </div>
 
-          <div className="topbar-actions">
+          <div className="flex items-center gap-3 self-end md:self-auto">
             <button
-              className="icon-button"
+              className="relative grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"
               onClick={() => navigate("/alerts")}
               title="Alerts"
             >
               <Bell size={20} />
-              <span className="notification-dot" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
             </button>
 
-            <div className="profile-chip">
-              <div className="avatar">
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5">
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-blue-100 font-extrabold text-blue-600">
                 {(user?.name || "U").charAt(0).toUpperCase()}
               </div>
 
@@ -216,11 +215,11 @@ const MainDashboard = () => {
           </div>
         </header>
 
-        {error && <div className="dashboard-error">{error}</div>}
+        {error && <div className="mb-5 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-xs text-orange-800">{error}</div>}
 
-        <section className="stat-grid">
-          <div className="stat-card blue">
-            <div className="stat-icon">
+        <section className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm [&_.grid h-11 w-11 place-items-center rounded-xl]:bg-blue-50 [&_.grid h-11 w-11 place-items-center rounded-xl]:text-blue-600">
+            <div className="grid h-11 w-11 place-items-center rounded-xl">
               <Package size={21} />
             </div>
 
@@ -230,8 +229,8 @@ const MainDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card teal">
-            <div className="stat-icon">
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm [&_.grid h-11 w-11 place-items-center rounded-xl]:bg-cyan-50 [&_.grid h-11 w-11 place-items-center rounded-xl]:text-cyan-600">
+            <div className="grid h-11 w-11 place-items-center rounded-xl">
               <Boxes size={21} />
             </div>
 
@@ -241,8 +240,8 @@ const MainDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card amber">
-            <div className="stat-icon">
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm [&_.grid h-11 w-11 place-items-center rounded-xl]:bg-amber-50 [&_.grid h-11 w-11 place-items-center rounded-xl]:text-amber-600">
+            <div className="grid h-11 w-11 place-items-center rounded-xl">
               <TriangleAlert size={21} />
             </div>
 
@@ -252,8 +251,8 @@ const MainDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card red">
-            <div className="stat-icon">
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm [&_.grid h-11 w-11 place-items-center rounded-xl]:bg-red-50 [&_.grid h-11 w-11 place-items-center rounded-xl]:text-red-600">
+            <div className="grid h-11 w-11 place-items-center rounded-xl">
               <XCircle size={21} />
             </div>
 
@@ -264,16 +263,16 @@ const MainDashboard = () => {
           </div>
         </section>
 
-        <section className="quick-actions">
+        <section className="mb-5 flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:flex-row lg:items-center">
           <div>
             <h2>Quick Actions</h2>
             <p>Access the most-used inventory tasks.</p>
           </div>
 
-          <div className="action-buttons">
+          <div className="flex flex-wrap gap-2">
             <Link
               to="/add-medicine"
-              className="action-button primary"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 no-underline transition hover:bg-slate-50 border-blue-600 bg-blue-600 text-white hover:bg-blue-700"
             >
               <Plus size={18} />
               Add Medicine
@@ -281,7 +280,7 @@ const MainDashboard = () => {
 
             <Link
               to="/inventory"
-              className="action-button"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 no-underline transition hover:bg-slate-50"
             >
               <Boxes size={18} />
               View Inventory
@@ -289,7 +288,7 @@ const MainDashboard = () => {
 
             <Link
               to="/suppliers"
-              className="action-button"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 no-underline transition hover:bg-slate-50"
             >
               <Truck size={18} />
               Suppliers
@@ -297,7 +296,7 @@ const MainDashboard = () => {
 
             <Link
               to="/expiry-analytics"
-              className="action-button"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 no-underline transition hover:bg-slate-50"
             >
               <ChartNoAxesCombined size={18} />
               Expiry Analytics
@@ -305,9 +304,9 @@ const MainDashboard = () => {
           </div>
         </section>
 
-        <section className="chart-grid">
-          <div className="panel chart-panel">
-            <div className="panel-heading">
+        <section className="mb-5 grid grid-cols-1 gap-5 xl:grid-cols-[1.35fr_1fr]">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm chart-panel">
+            <div className="mb-3 flex items-start justify-between gap-3 [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-slate-900 [&_p]:mt-1 [&_p]:text-xs [&_p]:text-slate-500 [&_a]:text-xs [&_a]:font-bold [&_a]:text-blue-600 [&_a]:no-underline">
               <div>
                 <h2>Stock by Category</h2>
                 <p>Current quantity across medicine categories</p>
@@ -352,14 +351,14 @@ const MainDashboard = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="empty-chart">
+              <div className="grid h-[280px] place-items-center rounded-xl bg-slate-50 text-xs text-slate-400">
                 No inventory data available.
               </div>
             )}
           </div>
 
-          <div className="panel chart-panel">
-            <div className="panel-heading">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm chart-panel">
+            <div className="mb-3 flex items-start justify-between gap-3 [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-slate-900 [&_p]:mt-1 [&_p]:text-xs [&_p]:text-slate-500 [&_a]:text-xs [&_a]:font-bold [&_a]:text-blue-600 [&_a]:no-underline">
               <div>
                 <h2>Expiry Overview</h2>
                 <p>
@@ -373,7 +372,7 @@ const MainDashboard = () => {
             </div>
 
             {expiryData.some((item) => item.value > 0) ? (
-              <div className="pie-wrap">
+              <div className="flex min-h-[250px] items-center">
                 <ResponsiveContainer width="58%" height={250}>
                   <PieChart>
                     <Pie
@@ -400,7 +399,7 @@ const MainDashboard = () => {
                   </PieChart>
                 </ResponsiveContainer>
 
-                <div className="pie-legend">
+                <div className="flex-1 [&_div]:my-3 [&_div]:grid [&_div]:grid-cols-[10px_1fr_auto] [&_div]:items-center [&_div]:gap-2 [&_div]:text-xs [&_span]:text-slate-500 [&_strong]:text-slate-900 [&_i]:h-2 [&_i]:w-2 [&_i]:rounded-full">
                   {expiryData.map((item, index) => (
                     <div key={item.name}>
                       <i
@@ -421,23 +420,23 @@ const MainDashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="empty-chart">
+              <div className="grid h-[280px] place-items-center rounded-xl bg-slate-50 text-xs text-slate-400">
                 No expiry dates have been provided yet.
               </div>
             )}
           </div>
         </section>
 
-        <section className="bottom-grid">
-          <div className="panel attention-panel">
-            <div className="panel-heading">
+        <section className="mb-5 grid grid-cols-1 gap-5 xl:grid-cols-[1.35fr_1fr]">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm attention-panel">
+            <div className="mb-3 flex items-start justify-between gap-3 [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-slate-900 [&_p]:mt-1 [&_p]:text-xs [&_p]:text-slate-500 [&_a]:text-xs [&_a]:font-bold [&_a]:text-blue-600 [&_a]:no-underline">
               <div>
                 <h2>Needs Attention</h2>
                 <p>Items that may need action</p>
               </div>
             </div>
 
-            <div className="attention-list">
+            <div className="flex flex-col gap-2 [&_button]:flex [&_button]:items-center [&_button]:gap-2 [&_button]:rounded-lg [&_button]:border [&_button]:border-slate-200 [&_button]:bg-slate-50 [&_button]:p-3 [&_button]:text-left [&_button]:text-slate-600 [&_button]:transition [&_button]:hover:bg-slate-100 [&_button_span]:flex-1 [&_button_span]:text-xs [&_button_strong]:text-xs [&_button_strong]:text-slate-900">
               {stats.outOfStock > 0 && (
                 <button onClick={() => navigate("/inventory")}>
                   <XCircle size={18} />
@@ -478,7 +477,7 @@ const MainDashboard = () => {
                 !stats.lowStock &&
                 !stats.expired &&
                 !stats.expiringSoon && (
-                  <div className="all-clear">
+                  <div className="flex items-center gap-2 px-2 py-6 text-xs text-slate-500">
                     <ClipboardList size={20} />
                     <span>
                       No current alerts based on available data.
@@ -488,15 +487,15 @@ const MainDashboard = () => {
             </div>
           </div>
 
-          <div className="panel modules-panel">
-            <div className="panel-heading">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm modules-panel">
+            <div className="mb-3 flex items-start justify-between gap-3 [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-slate-900 [&_p]:mt-1 [&_p]:text-xs [&_p]:text-slate-500 [&_a]:text-xs [&_a]:font-bold [&_a]:text-blue-600 [&_a]:no-underline">
               <div>
                 <h2>Management Modules</h2>
                 <p>More areas of the MediStock system</p>
               </div>
             </div>
 
-            <div className="module-grid">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 [&_a]:flex [&_a]:flex-col [&_a]:gap-1 [&_a]:rounded-xl [&_a]:border [&_a]:border-slate-200 [&_a]:bg-slate-50 [&_a]:p-3 [&_a]:text-blue-600 [&_a]:no-underline [&_a]:hover:border-blue-200 [&_a]:hover:bg-blue-50 [&_a_span]:text-xs [&_a_span]:font-extrabold [&_a_span]:text-slate-900 [&_a_small]:text-[10px] [&_a_small]:text-slate-500">
               <Link to="/suppliers">
                 <Truck size={20} />
                 <span>Supplier Management</span>

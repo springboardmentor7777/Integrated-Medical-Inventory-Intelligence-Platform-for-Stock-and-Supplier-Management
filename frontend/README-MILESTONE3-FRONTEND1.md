@@ -16,3 +16,9 @@ npm run dev
 
 Backend should be running on `http://localhost:8082`.
 Frontend runs on `http://localhost:3000`.
+
+
+## Styling update
+- Frontend styling is implemented with Tailwind CSS v4.
+- Recharts is used for analytics charts.
+- Supplier Management UI includes dashboard cards, search/filter, supplier table, add/edit/delete/view flows.

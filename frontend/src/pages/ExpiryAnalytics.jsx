@@ -11,9 +11,6 @@ import ExpiryCharts from "../components/expiry/ExpiryCharts";
 
 import { EXPIRY_STATUS, getExpiryStatus } from "../utils/expiryUtils";
 
-import "../App.css";
-import "./ExpiryAnalytics.css";
-
 const API_URL = "http://localhost:8082/api";
 
 // Milestone 3 Frontend 1 — Expiry + Inventory Analytics UI.
@@ -177,7 +174,7 @@ const ExpiryAnalytics = () => {
     }, [medicinesWithStatus]);
 
     // Inventory-focused metrics (distinct from the expiry-status summary
-    // above) — total stock on hand, category spread, low-stock items,
+    // above) — total stock on hand, category spread, bg-amber-100 text-amber-700 items,
     // and an overall "needs attention" count (expired + expiring soon).
     const inventoryStats = useMemo(() => {
         const totalStockQuantity = medicinesWithStatus.reduce(
@@ -205,41 +202,41 @@ const ExpiryAnalytics = () => {
     }, [medicinesWithStatus, categories, summary]);
 
     return (
-        <div className="medicine-page">
+        <div className="min-h-screen bg-slate-50 text-slate-800 text-left">
 
-            <header className="dashboard-header">
+            <header className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-5 py-5 md:px-8">
                 <div>
                     <h1>MediStock</h1>
                     <p>Expiry + Inventory Analytics</p>
                 </div>
 
-                <div className="user-section">
+                <div className="flex flex-wrap items-center gap-3 text-sm">
                     <span>Welcome, {user?.name}</span>
-                    <span className="role-badge">{user?.role}</span>
-                    <button onClick={logout} className="logout-btn">
+                    <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-600">{user?.role}</span>
+                    <button onClick={logout} className="rounded-lg border-0 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200">
                         Logout
                     </button>
                 </div>
             </header>
 
-            <main className="dashboard-content">
+            <main className="mx-auto w-full max-w-6xl px-5 py-8 md:px-8">
 
-                <div className="page-title">
+                <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
                     <div>
                         <h2>Expiry Dashboard</h2>
                         <p>Track medicine expiry status and inventory analytics</p>
                     </div>
 
-                    <div className="page-actions">
+                    <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                         <button
-                            className="inventory-btn"
+                            className="rounded-lg border-0 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-100"
                             onClick={() => navigate("/medicines")}
                         >
                             💊 Medicines
                         </button>
 
                         <button
-                            className="inventory-btn"
+                            className="rounded-lg border-0 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-100"
                             onClick={() => navigate("/inventory")}
                         >
                             📦 Inventory
@@ -258,8 +255,8 @@ const ExpiryAnalytics = () => {
                             safe={summary.safe}
                         />
 
-                        <section className="medicine-section analytics-section">
-                            <div className="section-header">
+                        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-6 mb-6">
+                            <div className="mb-4 [&_h2]:m-0 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900 [&_p]:mt-1 [&_p]:text-sm [&_p]:text-slate-500">
                                 <div>
                                     <h2>Inventory Analytics</h2>
                                     <p>Overview of medicines by expiry status and category</p>
@@ -283,8 +280,8 @@ const ExpiryAnalytics = () => {
                             />
                         </section>
 
-                        <section className="medicine-section">
-                            <div className="section-header">
+                        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                            <div className="mb-4 [&_h2]:m-0 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900 [&_p]:mt-1 [&_p]:text-sm [&_p]:text-slate-500">
                                 <div>
                                     <h2>Expiry Table</h2>
                                     <p>Search and filter medicines by expiry status</p>

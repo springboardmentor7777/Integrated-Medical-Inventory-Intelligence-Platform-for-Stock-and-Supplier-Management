@@ -1,9 +1,9 @@
 import { formatExpiryDate, getExpiryStatusClass } from "../../utils/expiryUtils";
 
 const statusClasses = {
-  "expiry-expired": "bg-red-100 text-red-700",
-  "expiry-soon": "bg-amber-100 text-amber-700",
-  "expiry-safe": "bg-emerald-100 text-emerald-700",
+  "bg-red-100 text-red-600": "bg-red-100 text-red-700",
+  "bg-amber-100 text-amber-700": "bg-amber-100 text-amber-700",
+  "bg-green-100 text-green-700": "bg-emerald-100 text-emerald-700",
 };
 
 const ExpiryTable = ({ medicines }) => {

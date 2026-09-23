@@ -63,27 +63,27 @@ const MedicineList = ({ medicines, onDelete }) => {
 
 
     return (
-        <section className="medicine-section">
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
 
-            <div className="section-header">
+            <div className="mb-4 [&_h2]:m-0 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900 [&_p]:mt-1 [&_p]:text-sm [&_p]:text-slate-500">
 
                 <div>
                     <h2>Medicine Inventory</h2>
 
                     <p>
-                        View and manage available medicines
+                        View and manage bg-green-100 text-green-700 medicines
                     </p>
                 </div>
 
             </div>
 
 
-            <div className="medicine-toolbar">
+            <div className="my-5 flex flex-col gap-3 md:flex-row">
 
                 <input
                     type="text"
                     placeholder="🔍 Search medicine..."
-                    className="search-input"
+                    className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                     value={search}
                     onChange={(e) =>
                         setSearch(e.target.value)
@@ -92,7 +92,7 @@ const MedicineList = ({ medicines, onDelete }) => {
 
 
                 <select
-                    className="filter-select"
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                     value={category}
                     onChange={(e) =>
                         setCategory(e.target.value)
@@ -121,7 +121,7 @@ const MedicineList = ({ medicines, onDelete }) => {
 
 
                 <select
-                    className="filter-select"
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                     value={stock}
                     onChange={(e) =>
                         setStock(e.target.value)
@@ -131,7 +131,7 @@ const MedicineList = ({ medicines, onDelete }) => {
                         All Stock
                     </option>
 
-                    <option value="available">
+                    <option value="bg-green-100 text-green-700">
                         Available
                     </option>
 
@@ -147,9 +147,9 @@ const MedicineList = ({ medicines, onDelete }) => {
             </div>
 
 
-            <div className="medicine-table-container">
+            <div className="overflow-x-auto">
 
-                <table className="medicine-table">
+                <table className="w-full border-collapse text-left text-sm [&_th]:border-b [&_th]:border-slate-200 [&_th]:bg-slate-50 [&_th]:px-3 [&_th]:py-3 [&_th]:font-semibold [&_th]:text-slate-500 [&_td]:border-b [&_td]:border-slate-100 [&_td]:px-3 [&_td]:py-4">
 
                     <thead>
 
@@ -174,7 +174,7 @@ const MedicineList = ({ medicines, onDelete }) => {
                         <tr>
                             <td
                                 colSpan="8"
-                                className="empty-state"
+                                className="!p-10 text-center text-slate-400"
                             >
                                 No medicines found
                             </td>
@@ -220,7 +220,7 @@ const MedicineList = ({ medicines, onDelete }) => {
                                     <td>
 
                                             <span
-                                                className={`stock-status ${status
+                                                className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${status
                                                     .toLowerCase()
                                                     .replaceAll(
                                                         " ",
@@ -235,7 +235,7 @@ const MedicineList = ({ medicines, onDelete }) => {
                                     <td>
 
                                         <button
-                                            className="edit-btn"
+                                            className="mr-1.5 rounded-md border-0 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 transition hover:bg-blue-100"
                                             onClick={() =>
                                                 handleEdit(medicine)
                                             }
@@ -244,7 +244,7 @@ const MedicineList = ({ medicines, onDelete }) => {
                                         </button>
 
                                         <button
-                                            className="delete-btn"
+                                            className="mr-1.5 rounded-md border-0 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-100"
                                             onClick={() =>
                                                 onDelete(
                                                     medicine.id

@@ -94,9 +94,9 @@ const AddMedicine = () => {
     };
 
     return (
-        <div className="medicine-page">
+        <div className="min-h-screen bg-slate-50 text-slate-800 text-left">
 
-            <header className="dashboard-header">
+            <header className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-5 py-5 md:px-8">
 
                 <div>
                     <h1>MediStock</h1>
@@ -107,7 +107,7 @@ const AddMedicine = () => {
                 </div>
 
                 <button
-                    className="logout-btn"
+                    className="rounded-lg border-0 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
                     onClick={() => navigate("/medicines")}
                 >
                     Back to Dashboard
@@ -115,9 +115,9 @@ const AddMedicine = () => {
 
             </header>
 
-            <main className="dashboard-content">
+            <main className="mx-auto w-full max-w-6xl px-5 py-8 md:px-8">
 
-                <div className="page-title">
+                <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
 
                     <div>
                         <h2>Add Medicine</h2>
@@ -130,11 +130,11 @@ const AddMedicine = () => {
                 </div>
 
                 <form
-                    className="medicine-form"
+                    className="w-full max-w-3xl rounded-xl bg-white p-5 shadow-md md:p-7"
                     onSubmit={handleSubmit}
                 >
 
-                    <div className="form-group">
+                    <div className="mb-5 flex flex-col [&_label]:mb-2 [&_label]:text-sm [&_label]:font-semibold [&_label]:text-slate-800 [&_input]:w-full [&_input]:box-border [&_input]:rounded-lg [&_input]:border [&_input]:border-slate-300 [&_input]:bg-white [&_input]:px-3.5 [&_input]:py-3 [&_input]:text-sm [&_input]:text-slate-800 [&_input]:outline-none [&_input]:focus:border-blue-600 [&_input]:focus:ring-2 [&_input]:focus:ring-blue-100 [&_select]:w-full [&_select]:box-border [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-300 [&_select]:bg-white [&_select]:px-3.5 [&_select]:py-3 [&_select]:text-sm [&_select]:text-slate-800 [&_select]:outline-none [&_select]:focus:border-blue-600 [&_select]:focus:ring-2 [&_select]:focus:ring-blue-100 [&_textarea]:w-full [&_textarea]:box-border [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-slate-300 [&_textarea]:bg-white [&_textarea]:px-3.5 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:text-slate-800 [&_textarea]:outline-none [&_textarea]:focus:border-blue-600 [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-blue-100">
 
                         <label>
                             Medicine Name
@@ -151,7 +151,7 @@ const AddMedicine = () => {
 
                     </div>
 
-                    <div className="form-group">
+                    <div className="mb-5 flex flex-col [&_label]:mb-2 [&_label]:text-sm [&_label]:font-semibold [&_label]:text-slate-800 [&_input]:w-full [&_input]:box-border [&_input]:rounded-lg [&_input]:border [&_input]:border-slate-300 [&_input]:bg-white [&_input]:px-3.5 [&_input]:py-3 [&_input]:text-sm [&_input]:text-slate-800 [&_input]:outline-none [&_input]:focus:border-blue-600 [&_input]:focus:ring-2 [&_input]:focus:ring-blue-100 [&_select]:w-full [&_select]:box-border [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-300 [&_select]:bg-white [&_select]:px-3.5 [&_select]:py-3 [&_select]:text-sm [&_select]:text-slate-800 [&_select]:outline-none [&_select]:focus:border-blue-600 [&_select]:focus:ring-2 [&_select]:focus:ring-blue-100 [&_textarea]:w-full [&_textarea]:box-border [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-slate-300 [&_textarea]:bg-white [&_textarea]:px-3.5 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:text-slate-800 [&_textarea]:outline-none [&_textarea]:focus:border-blue-600 [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-blue-100">
 
                         <label>
                             Category
@@ -188,7 +188,7 @@ const AddMedicine = () => {
 
                     </div>
 
-                    <div className="form-group">
+                    <div className="mb-5 flex flex-col [&_label]:mb-2 [&_label]:text-sm [&_label]:font-semibold [&_label]:text-slate-800 [&_input]:w-full [&_input]:box-border [&_input]:rounded-lg [&_input]:border [&_input]:border-slate-300 [&_input]:bg-white [&_input]:px-3.5 [&_input]:py-3 [&_input]:text-sm [&_input]:text-slate-800 [&_input]:outline-none [&_input]:focus:border-blue-600 [&_input]:focus:ring-2 [&_input]:focus:ring-blue-100 [&_select]:w-full [&_select]:box-border [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-300 [&_select]:bg-white [&_select]:px-3.5 [&_select]:py-3 [&_select]:text-sm [&_select]:text-slate-800 [&_select]:outline-none [&_select]:focus:border-blue-600 [&_select]:focus:ring-2 [&_select]:focus:ring-blue-100 [&_textarea]:w-full [&_textarea]:box-border [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-slate-300 [&_textarea]:bg-white [&_textarea]:px-3.5 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:text-slate-800 [&_textarea]:outline-none [&_textarea]:focus:border-blue-600 [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-blue-100">
 
                         <label>
                             Manufacturer
@@ -205,7 +205,7 @@ const AddMedicine = () => {
 
                     </div>
 
-                    <div className="form-group">
+                    <div className="mb-5 flex flex-col [&_label]:mb-2 [&_label]:text-sm [&_label]:font-semibold [&_label]:text-slate-800 [&_input]:w-full [&_input]:box-border [&_input]:rounded-lg [&_input]:border [&_input]:border-slate-300 [&_input]:bg-white [&_input]:px-3.5 [&_input]:py-3 [&_input]:text-sm [&_input]:text-slate-800 [&_input]:outline-none [&_input]:focus:border-blue-600 [&_input]:focus:ring-2 [&_input]:focus:ring-blue-100 [&_select]:w-full [&_select]:box-border [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-300 [&_select]:bg-white [&_select]:px-3.5 [&_select]:py-3 [&_select]:text-sm [&_select]:text-slate-800 [&_select]:outline-none [&_select]:focus:border-blue-600 [&_select]:focus:ring-2 [&_select]:focus:ring-blue-100 [&_textarea]:w-full [&_textarea]:box-border [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-slate-300 [&_textarea]:bg-white [&_textarea]:px-3.5 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:text-slate-800 [&_textarea]:outline-none [&_textarea]:focus:border-blue-600 [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-blue-100">
 
                         <label>
                             Description
@@ -222,9 +222,9 @@ const AddMedicine = () => {
 
                     </div>
 
-                    <div className="form-row">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 
-                        <div className="form-group">
+                        <div className="mb-5 flex flex-col [&_label]:mb-2 [&_label]:text-sm [&_label]:font-semibold [&_label]:text-slate-800 [&_input]:w-full [&_input]:box-border [&_input]:rounded-lg [&_input]:border [&_input]:border-slate-300 [&_input]:bg-white [&_input]:px-3.5 [&_input]:py-3 [&_input]:text-sm [&_input]:text-slate-800 [&_input]:outline-none [&_input]:focus:border-blue-600 [&_input]:focus:ring-2 [&_input]:focus:ring-blue-100 [&_select]:w-full [&_select]:box-border [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-300 [&_select]:bg-white [&_select]:px-3.5 [&_select]:py-3 [&_select]:text-sm [&_select]:text-slate-800 [&_select]:outline-none [&_select]:focus:border-blue-600 [&_select]:focus:ring-2 [&_select]:focus:ring-blue-100 [&_textarea]:w-full [&_textarea]:box-border [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-slate-300 [&_textarea]:bg-white [&_textarea]:px-3.5 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:text-slate-800 [&_textarea]:outline-none [&_textarea]:focus:border-blue-600 [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-blue-100">
 
                             <label>
                                 Price
@@ -243,7 +243,7 @@ const AddMedicine = () => {
 
                         </div>
 
-                        <div className="form-group">
+                        <div className="mb-5 flex flex-col [&_label]:mb-2 [&_label]:text-sm [&_label]:font-semibold [&_label]:text-slate-800 [&_input]:w-full [&_input]:box-border [&_input]:rounded-lg [&_input]:border [&_input]:border-slate-300 [&_input]:bg-white [&_input]:px-3.5 [&_input]:py-3 [&_input]:text-sm [&_input]:text-slate-800 [&_input]:outline-none [&_input]:focus:border-blue-600 [&_input]:focus:ring-2 [&_input]:focus:ring-blue-100 [&_select]:w-full [&_select]:box-border [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-300 [&_select]:bg-white [&_select]:px-3.5 [&_select]:py-3 [&_select]:text-sm [&_select]:text-slate-800 [&_select]:outline-none [&_select]:focus:border-blue-600 [&_select]:focus:ring-2 [&_select]:focus:ring-blue-100 [&_textarea]:w-full [&_textarea]:box-border [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-slate-300 [&_textarea]:bg-white [&_textarea]:px-3.5 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:text-slate-800 [&_textarea]:outline-none [&_textarea]:focus:border-blue-600 [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-blue-100">
 
                             <label>
                                 Reorder Level
@@ -263,9 +263,9 @@ const AddMedicine = () => {
 
                     </div>
 
-                    <div className="form-row">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 
-                        <div className="form-group">
+                        <div className="mb-5 flex flex-col [&_label]:mb-2 [&_label]:text-sm [&_label]:font-semibold [&_label]:text-slate-800 [&_input]:w-full [&_input]:box-border [&_input]:rounded-lg [&_input]:border [&_input]:border-slate-300 [&_input]:bg-white [&_input]:px-3.5 [&_input]:py-3 [&_input]:text-sm [&_input]:text-slate-800 [&_input]:outline-none [&_input]:focus:border-blue-600 [&_input]:focus:ring-2 [&_input]:focus:ring-blue-100 [&_select]:w-full [&_select]:box-border [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-300 [&_select]:bg-white [&_select]:px-3.5 [&_select]:py-3 [&_select]:text-sm [&_select]:text-slate-800 [&_select]:outline-none [&_select]:focus:border-blue-600 [&_select]:focus:ring-2 [&_select]:focus:ring-blue-100 [&_textarea]:w-full [&_textarea]:box-border [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-slate-300 [&_textarea]:bg-white [&_textarea]:px-3.5 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:text-slate-800 [&_textarea]:outline-none [&_textarea]:focus:border-blue-600 [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-blue-100">
 
                             <label>
                                 Batch Number
@@ -281,7 +281,7 @@ const AddMedicine = () => {
 
                         </div>
 
-                        <div className="form-group">
+                        <div className="mb-5 flex flex-col [&_label]:mb-2 [&_label]:text-sm [&_label]:font-semibold [&_label]:text-slate-800 [&_input]:w-full [&_input]:box-border [&_input]:rounded-lg [&_input]:border [&_input]:border-slate-300 [&_input]:bg-white [&_input]:px-3.5 [&_input]:py-3 [&_input]:text-sm [&_input]:text-slate-800 [&_input]:outline-none [&_input]:focus:border-blue-600 [&_input]:focus:ring-2 [&_input]:focus:ring-blue-100 [&_select]:w-full [&_select]:box-border [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-300 [&_select]:bg-white [&_select]:px-3.5 [&_select]:py-3 [&_select]:text-sm [&_select]:text-slate-800 [&_select]:outline-none [&_select]:focus:border-blue-600 [&_select]:focus:ring-2 [&_select]:focus:ring-blue-100 [&_textarea]:w-full [&_textarea]:box-border [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-slate-300 [&_textarea]:bg-white [&_textarea]:px-3.5 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:text-slate-800 [&_textarea]:outline-none [&_textarea]:focus:border-blue-600 [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-blue-100">
 
                             <label>
                                 Expiry Date
@@ -298,11 +298,11 @@ const AddMedicine = () => {
 
                     </div>
 
-                    <div className="form-actions">
+                    <div className="mt-2 flex flex-col justify-end gap-3 sm:flex-row">
 
                         <button
                             type="button"
-                            className="cancel-btn"
+                            className="rounded-lg border-0 bg-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-300"
                             onClick={() => navigate("/medicines")}
                         >
                             Cancel
@@ -310,7 +310,7 @@ const AddMedicine = () => {
 
                         <button
                             type="submit"
-                            className="add-medicine-btn"
+                            className="inline-flex items-center justify-center rounded-lg border-0 bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                             disabled={loading}
                         >
                             {loading
