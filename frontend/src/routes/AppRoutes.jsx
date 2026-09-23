@@ -12,391 +12,342 @@ import MedicineDashboard from "../pages/MedicineDashboard";
 import AddMedicine from "../pages/AddMedicine";
 import EditMedicine from "../pages/EditMedicine";
 import Inventory from "../pages/Inventory";
+import ExpiryAnalytics from "../pages/ExpiryAnalytics";
+
+import DashboardLayout from "../components/DashboardLayout";
+import MainDashboard from "../pages/MainDashboard";
 
 const API_URL = "http://localhost:8082/api";
 
 const Login = () => {
-    const { login } = useAuth();
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setError("");
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-        if (!email || !password) {
-            setError("Please enter email and password.");
-            return;
-        }
+    setError("");
+    setLoading(true);
 
-        try {
-            setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
 
-            const response = await fetch(
-                `${API_URL}/auth/login`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password
-                    })
-                }
-            );
+      const data = await response.json();
 
-            const data = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Invalid username or password"
+        );
+      }
 
-            if (!response.ok) {
-                throw new Error(
-                    data.message || "Invalid email or password."
-                );
-            }
+      login(data);
 
-            login(data);
+      if (data.role === "ADMIN") {
+        navigate("/admin");
+      } else if (data.role === "PHARMACIST") {
+        navigate("/dashboard");
+      } else if (data.role === "STAFF") {
+        navigate("/staff");
+      } else {
+        navigate("/unauthorized");
+      }
+    } catch (err) {
+      setError(
+        err.message ||
+          "Unable to connect to the server. Please check your network or try again later."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            if (data.role === "ADMIN") {
-                navigate("/admin");
-            } else if (data.role === "PHARMACIST") {
-                navigate("/medicines");
-            } else if (data.role === "STAFF") {
-                navigate("/staff");
-            } else {
-                navigate("/unauthorized");
-            }
+  return (
+    <div className="login-page">
+      <div className="login-box">
+        <h1>MediStock</h1>
+        <p>Medical Inventory Management</p>
 
-        } catch (error) {
-            console.error("Login error:", error);
+        <form onSubmit={handleLogin}>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
 
-            setError(
-                error.message ||
-                "Login failed. Please check the backend."
-            );
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
-        } finally {
-            setLoading(false);
-        }
-    };
+          {error && <p className="login-error">{error}</p>}
 
-    return (
-        <div className="login-page">
-            <div className="login-card">
+          <button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
 
-                <h1>MedStock</h1>
-                <p>Medical Inventory Management</p>
-
-                <h2>Login</h2>
-
-                <form onSubmit={handleLogin}>
-
-                    <div className="form-group">
-                        <label>Email</label>
-
-                        <input
-                            type="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Password</label>
-
-                        <input
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                    </div>
-
-                    {error && (
-                        <p className="error-message">
-                            {error}
-                        </p>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading ? "Logging in..." : "Login"}
-                    </button>
-
-                </form>
-
-            </div>
-        </div>
-    );
+        <button
+          type="button"
+          onClick={() => navigate("/register")}
+          className="register-link"
+        >
+          Create an account
+        </button>
+      </div>
+    </div>
+  );
 };
-
 
 const Register = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [role, setRole] = useState("PHARMACIST");
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    email: "",
+    role: "STAFF",
+  });
 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const handleRegister = async (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-        e.preventDefault();
+  const handleRegister = async (e) => {
+    e.preventDefault();
 
-        setError("");
+    setMessage("");
+    setError("");
+    setLoading(true);
 
-        if (!name || !email || !password || !role) {
-            setError("Please fill all fields.");
-            return;
-        }
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-        try {
+      const data = await response.json();
 
-            setLoading(true);
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
 
-            const response = await fetch(
-                `${API_URL}/auth/register`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        name: name,
-                        email: email,
-                        password: password,
-                        role: role
-                    })
-                }
-            );
+      setMessage("Registration successful. You can now login.");
 
-            const data = await response.text();
+      setTimeout(() => {
+        navigate("/login");
+      }, 1200);
+    } catch (err) {
+      setError(err.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            if (!response.ok) {
-                throw new Error(
-                    data || "Registration failed."
-                );
-            }
+  return (
+    <div className="login-page">
+      <div className="login-box">
+        <h1>Create Account</h1>
+        <p>MediStock Registration</p>
 
-            alert(
-                "Registration successful. Please login."
-            );
+        <form onSubmit={handleRegister}>
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+            required
+          />
 
-            navigate("/login");
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
 
-        } catch (error) {
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
 
-            console.error(
-                "Registration error:",
-                error
-            );
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+          >
+            <option value="STAFF">Staff</option>
+            <option value="PHARMACIST">Pharmacist</option>
+          </select>
 
-            setError(
-                error.message ||
-                "Registration failed. Please check the backend."
-            );
+          {error && <p className="login-error">{error}</p>}
 
-        } finally {
+          {message && (
+            <p className="login-success">{message}</p>
+          )}
 
-            setLoading(false);
+          <button type="submit" disabled={loading}>
+            {loading ? "Creating..." : "Register"}
+          </button>
+        </form>
 
-        }
-    };
-
-    return (
-        <div className="login-page">
-            <div className="login-card">
-
-                <h1>MedStock</h1>
-                <p>Medical Inventory Management</p>
-
-                <h2>Register</h2>
-
-                <form onSubmit={handleRegister}>
-
-                    <div className="form-group">
-                        <label>Name</label>
-
-                        <input
-                            type="text"
-                            placeholder="Enter your name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Email</label>
-
-                        <input
-                            type="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Password</label>
-
-                        <input
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Role</label>
-
-                        <select
-                            value={role}
-                            onChange={(e) => setRole(e.target.value)}
-                        >
-                            <option value="PHARMACIST">
-                                Pharmacist
-                            </option>
-
-                            <option value="STAFF">
-                                Staff
-                            </option>
-
-                            <option value="ADMIN">
-                                Admin
-                            </option>
-                        </select>
-                    </div>
-
-                    {error && (
-                        <p className="error-message">
-                            {error}
-                        </p>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading
-                            ? "Creating Account..."
-                            : "Register"}
-                    </button>
-
-                </form>
-
-            </div>
-        </div>
-    );
+        <button
+          type="button"
+          onClick={() => navigate("/login")}
+          className="register-link"
+        >
+          Back to Login
+        </button>
+      </div>
+    </div>
+  );
 };
 
-
 const AppRoutes = () => {
-    return (
-        <Routes>
+  return (
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-            <Route
-                path="/"
-                element={<Login />}
-            />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
 
-            <Route
-                path="/login"
-                element={<Login />}
-            />
+      <Route
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "PHARMACIST"]}>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard" element={<MainDashboard />} />
+        <Route path="/medicines" element={<MedicineDashboard />} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route
+          path="/expiry-analytics"
+          element={<ExpiryAnalytics />}
+        />
+      </Route>
 
-            <Route
-                path="/register"
-                element={<Register />}
-            />
+      <Route
+        path="/add-medicine"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "PHARMACIST"]}>
+            <AddMedicine />
+          </ProtectedRoute>
+        }
+      />
 
-            <Route
-                path="/admin"
-                element={
-                    <ProtectedRoute allowedRoles={["ADMIN"]}>
-                        <AdminDashboard />
-                    </ProtectedRoute>
-                }
-            />
+      <Route
+        path="/edit-medicine"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "PHARMACIST"]}>
+            <EditMedicine />
+          </ProtectedRoute>
+        }
+      />
 
-            <Route
-                path="/medicines"
-                element={
-                    <ProtectedRoute
-                        allowedRoles={["ADMIN", "PHARMACIST"]}
-                    >
-                        <MedicineDashboard />
-                    </ProtectedRoute>
-                }
-            />
+      <Route
+        path="/suppliers"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "PHARMACIST"]}>
+            <div className="module-placeholder">
+              <h1>Supplier Management</h1>
+              <p>Supplier Management module will be integrated here.</p>
+            </div>
+          </ProtectedRoute>
+        }
+      />
 
-            <Route
-                path="/add-medicine"
-                element={
-                    <ProtectedRoute
-                        allowedRoles={["ADMIN", "PHARMACIST"]}
-                    >
-                        <AddMedicine />
-                    </ProtectedRoute>
-                }
-            />
+      <Route
+        path="/alerts"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "PHARMACIST"]}>
+            <div className="module-placeholder">
+              <h1>Alerts</h1>
+              <p>Alerts and Notifications module will be integrated here.</p>
+            </div>
+          </ProtectedRoute>
+        }
+      />
 
-            <Route
-                path="/edit-medicine"
-                element={
-                    <ProtectedRoute
-                        allowedRoles={["ADMIN", "PHARMACIST"]}
-                    >
-                        <EditMedicine />
-                    </ProtectedRoute>
-                }
-            />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "PHARMACIST"]}>
+            <div className="module-placeholder">
+              <h1>Reports</h1>
+              <p>Reports module will be integrated here.</p>
+            </div>
+          </ProtectedRoute>
+        }
+      />
 
-            <Route
-                path="/inventory"
-                element={
-                    <ProtectedRoute
-                        allowedRoles={["ADMIN", "PHARMACIST"]}
-                    >
-                        <Inventory />
-                    </ProtectedRoute>
-                }
-            />
+      <Route
+        path="/pharmacist"
+        element={
+          <ProtectedRoute allowedRoles={["PHARMACIST"]}>
+            <PharmacistDashboard />
+          </ProtectedRoute>
+        }
+      />
 
-            <Route
-                path="/pharmacist"
-                element={
-                    <ProtectedRoute allowedRoles={["PHARMACIST"]}>
-                        <PharmacistDashboard />
-                    </ProtectedRoute>
-                }
-            />
+      <Route
+        path="/staff"
+        element={
+          <ProtectedRoute allowedRoles={["STAFF"]}>
+            <StaffDashboard />
+          </ProtectedRoute>
+        }
+      />
 
-            <Route
-                path="/staff"
-                element={
-                    <ProtectedRoute allowedRoles={["STAFF"]}>
-                        <StaffDashboard />
-                    </ProtectedRoute>
-                }
-            />
-
-            <Route
-                path="/unauthorized"
-                element={<Unauthorized />}
-            />
-
-        </Routes>
-    );
+      <Route
+        path="/unauthorized"
+        element={<Unauthorized />}
+      />
+    </Routes>
+  );
 };
 
 export default AppRoutes;

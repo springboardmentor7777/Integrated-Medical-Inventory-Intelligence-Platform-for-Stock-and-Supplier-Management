@@ -1,75 +1,64 @@
 import api from './api';
 
+/**
+ * Authentication service handling Login and Register API calls.
+ */
 export const authService = {
-
+  /**
+   * User login
+   * @param {Object} credentials - { email, password }
+   * @returns {Promise<Object>} API response data
+   */
   async login(credentials) {
     const response = await api.post('/api/auth/login', credentials);
-    this.saveSession(response.data);
     return response.data;
   },
 
+  /**
+   * User registration
+   * @param {Object} userData - { name, email, password, role }
+   * @returns {Promise<Object>} API response data
+   */
   async register(userData) {
     const response = await api.post('/api/auth/register', userData);
     return response.data;
   },
 
-  saveSession(authData) {
-    localStorage.setItem('medistock_token', authData.token);
-
-    // Safely extract properties whether authData flatly contains user attributes OR holds a nested user object
-    const userObj = authData.user || authData;
-
-    localStorage.setItem(
-        'medistock_user',
-        JSON.stringify({
-          id: userObj.id || userObj.userId || null,
-          name: userObj.name || userObj.fullName || userObj.username || 'User',
-          email: userObj.email || '',
-          role: userObj.role || 'GUEST',
-        })
-    );
-  },
-
-  getToken() {
-    return localStorage.getItem('medistock_token');
-  },
-
-  getCurrentUser() {
-    try {
-      const userStr = localStorage.getItem('medistock_user');
-      return userStr ? JSON.parse(userStr) : null;
-    } catch {
-      return null;
-    }
-  },
-
-  isAuthenticated() {
-    return Boolean(this.getToken() && this.getCurrentUser());
-  },
-
-  logout() {
-    localStorage.removeItem('medistock_token');
-    localStorage.removeItem('medistock_user');
-  },
-
+  /**
+   * Formats API errors into user-friendly messages
+   * @param {Error} error - Axios error object
+   * @returns {string} User-friendly error message
+   */
   handleError(error) {
     if (!error.response) {
       return 'Unable to connect to the server. Please check your network or try again later.';
     }
 
     const { status, data } = error.response;
+
+    // Check if backend provided a clean error message
     if (data && typeof data === 'object' && data.message && typeof data.message === 'string') {
       return data.message;
     }
-    if (data && typeof data === 'string') return data;
+
+    if (data && typeof data === 'string') {
+      return data;
+    }
 
     switch (status) {
-      case 400: return 'Invalid request. Please check your details.';
-      case 401: return 'Invalid email or password.';
-      case 403: return 'Access forbidden. You do not have permission.';
-      case 404: return 'Requested resource was not found.';
-      case 409: return 'A record with these details already exists.';
-      default: return 'Server error. Please try again later.';
+      case 400:
+        return 'Invalid request. Please check your details.';
+      case 401:
+        return 'Invalid email or password.';
+      case 403:
+        return 'Access forbidden. You do not have permission.';
+      case 404:
+        return 'Authentication service endpoint not found.';
+      case 409:
+        return 'An account with this email already exists.';
+      case 500:
+      default:
+        return 'Server error. Please try again later.';
     }
   },
 };

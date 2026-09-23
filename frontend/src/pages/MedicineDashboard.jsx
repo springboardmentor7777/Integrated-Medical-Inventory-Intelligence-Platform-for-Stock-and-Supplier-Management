@@ -1,3 +1,4 @@
+import authFetch from "../services/authFetch";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +24,7 @@ const MedicineDashboard = () => {
 
     const fetchMedicines = async () => {
 
-        const response = await fetch(
+        const response = await authFetch(
             `${API_URL}/medicines`,
             {
                 method: "GET",
@@ -40,7 +41,7 @@ const MedicineDashboard = () => {
 
     const fetchInventory = async () => {
 
-        const response = await fetch(
+        const response = await authFetch(
             `${API_URL}/inventory`,
             {
                 method: "GET",
@@ -150,7 +151,7 @@ const MedicineDashboard = () => {
 
         try {
 
-            const response = await fetch(
+            const response = await authFetch(
                 `${API_URL}/medicines/${id}`,
                 {
                     method: "DELETE",
@@ -197,15 +198,17 @@ const MedicineDashboard = () => {
 
                 <div className="user-section">
 
-                    <div className="user-info">
-                        <span className="welcome-name">
-                            Welcome, {user?.name} ({user?.role})
-                        </span>
-                    </div>
+                    <span>
+                        Welcome, {user?.name}
+                    </span>
+
+                    <span className="role-badge">
+                        {user?.role}
+                    </span>
 
                     <button
                         onClick={logout}
-                        className="logout-button"
+                        className="logout-btn"
                     >
                         Logout
                     </button>
@@ -237,10 +240,17 @@ const MedicineDashboard = () => {
                         </button>
 
                         <button
+                            className="inventory-btn"
+                            onClick={() => navigate("/expiry-analytics")}
+                        >
+                            📊 Expiry Analytics
+                        </button>
+
+                        <button
                             className="add-medicine-btn"
                             onClick={() => navigate("/add-medicine")}
                         >
-                            ➕ Add Medicine
+                            + Add Medicine
                         </button>
 
                     </div>
@@ -251,58 +261,42 @@ const MedicineDashboard = () => {
                 <div className="stats-grid">
 
                     <div className="stat-card">
-
-                        <div className="stat-icon">
-                            💊
-                        </div>
+                        <div className="stat-icon">💊</div>
 
                         <div>
                             <p>Total Medicines</p>
                             <h3>{totalMedicines}</h3>
                         </div>
-
                     </div>
 
 
                     <div className="stat-card">
-
-                        <div className="stat-icon">
-                            📦
-                        </div>
+                        <div className="stat-icon">📦</div>
 
                         <div>
                             <p>Available Stock</p>
                             <h3>{availableStock}</h3>
                         </div>
-
                     </div>
 
 
                     <div className="stat-card">
-
-                        <div className="stat-icon">
-                            ⚠️
-                        </div>
+                        <div className="stat-icon">⚠️</div>
 
                         <div>
                             <p>Low Stock</p>
                             <h3>{lowStock}</h3>
                         </div>
-
                     </div>
 
 
                     <div className="stat-card">
-
-                        <div className="stat-icon">
-                            ❌
-                        </div>
+                        <div className="stat-icon">❌</div>
 
                         <div>
                             <p>Out of Stock</p>
                             <h3>{outOfStock}</h3>
                         </div>
-
                     </div>
 
                 </div>

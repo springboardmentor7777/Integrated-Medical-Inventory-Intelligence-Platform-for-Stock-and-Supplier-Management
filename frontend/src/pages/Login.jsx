@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Activity, ShieldCheck, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
 import authService from '../services/authService';
+import { useAuth } from '../context/useAuth';
 
 const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -69,13 +71,27 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      await authService.login({
+      const response = await authService.login({
         email: formData.email.trim(),
         password: formData.password,
       });
 
-      setApiSuccess('Login successful!');
-      navigate('/dashboard', { replace: true });
+      // Store the authenticated user returned by Spring Boot.
+      // The response contains: token, userId, name, email, and role.
+      login(response);
+      setApiSuccess('Login successful! Redirecting...');
+
+      const role = response?.role?.toUpperCase();
+
+      if (role === 'ADMIN') {
+        navigate('/admin', { replace: true });
+      } else if (role === 'PHARMACIST') {
+        navigate('/dashboard', { replace: true });
+      } else if (role === 'STAFF') {
+        navigate('/staff', { replace: true });
+      } else {
+        navigate('/unauthorized', { replace: true });
+      }
     } catch (err) {
       const message = authService.handleError(err);
       setApiError(message);

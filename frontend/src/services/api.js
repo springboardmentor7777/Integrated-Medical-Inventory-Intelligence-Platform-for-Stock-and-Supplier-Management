@@ -10,22 +10,18 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('medistock_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  try {
+    const storedUser = localStorage.getItem('user');
+    const user = storedUser ? JSON.parse(storedUser) : null;
+
+    if (user?.token) {
+      config.headers.Authorization = `Bearer ${user.token}`;
+    }
+  } catch (error) {
+    console.error('Unable to read stored authentication data:', error);
   }
+
   return config;
 });
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('medistock_token');
-      localStorage.removeItem('medistock_user');
-    }
-    return Promise.reject(error);
-  }
-);
 
 export default api;

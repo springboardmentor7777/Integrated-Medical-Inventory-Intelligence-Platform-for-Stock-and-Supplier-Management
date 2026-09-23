@@ -1,3 +1,4 @@
+import authFetch from "../services/authFetch";
 import { useState } from "react";
 import { useAuth } from "../context/useAuth";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -20,7 +21,9 @@ const EditMedicine = () => {
                 manufacturer: existingMedicine.manufacturer || "",
                 description: existingMedicine.description || "",
                 price: existingMedicine.price ?? "",
-                reorderLevel: existingMedicine.reorderLevel ?? ""
+                reorderLevel: existingMedicine.reorderLevel ?? "",
+                batchNumber: existingMedicine.batchNumber || "",
+                expiryDate: existingMedicine.expiryDate || ""
             }
             : null
     );
@@ -104,7 +107,7 @@ const EditMedicine = () => {
 
             setLoading(true);
 
-            const response = await fetch(
+            const response = await authFetch(
                 `${API_URL}/medicines/${existingMedicine.id}`,
                 {
                     method: "PUT",
@@ -120,7 +123,12 @@ const EditMedicine = () => {
                         manufacturer: medicine.manufacturer,
                         description: medicine.description,
                         price: Number(medicine.price),
-                        reorderLevel: Number(medicine.reorderLevel)
+                        reorderLevel: Number(medicine.reorderLevel),
+                        // Sent only if the backend Medicine model supports them;
+                        // most backends simply ignore unknown JSON fields, so
+                        // this stays safe even before that field is added.
+                        batchNumber: medicine.batchNumber || null,
+                        expiryDate: medicine.expiryDate || null
                     })
                 }
             );
@@ -323,6 +331,41 @@ const EditMedicine = () => {
                                 value={medicine.reorderLevel}
                                 onChange={handleChange}
                                 required
+                            />
+
+                        </div>
+
+                    </div>
+
+                    <div className="form-row">
+
+                        <div className="form-group">
+
+                            <label>
+                                Batch Number
+                            </label>
+
+                            <input
+                                type="text"
+                                name="batchNumber"
+                                placeholder="e.g. BT-24011"
+                                value={medicine.batchNumber}
+                                onChange={handleChange}
+                            />
+
+                        </div>
+
+                        <div className="form-group">
+
+                            <label>
+                                Expiry Date
+                            </label>
+
+                            <input
+                                type="date"
+                                name="expiryDate"
+                                value={medicine.expiryDate}
+                                onChange={handleChange}
                             />
 
                         </div>
