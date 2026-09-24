@@ -1,4 +1,4 @@
-package com.medistock.security;
+ package com.medistock.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,6 +33,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
+        System.out.println("AUTH HEADER PRESENT: " + (authHeader != null));
+        System.out.println("AUTH HEADER STARTS BEARER: "
+                + (authHeader != null && authHeader.startsWith("Bearer ")));
+
         String email = null;
         String token = null;
 
@@ -48,16 +52,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // Validate token and set authentication
+        // Validate token
+        boolean tokenValid = false;
+
+        if (token != null) {
+            tokenValid = jwtUtil.validateToken(token);
+        }
+
+        System.out.println("JWT EMAIL: " + email);
+        System.out.println("JWT VALID: " + tokenValid);
+
+        // Set authentication
         if (email != null
                 && SecurityContextHolder.getContext().getAuthentication() == null
-                && jwtUtil.validateToken(token)) {
+                && tokenValid) {
 
             String role = jwtUtil.extractRole(token);
+
+            System.out.println("JWT ROLE: " + role);
+
             if (role != null) {
                 role = role.toUpperCase();
             }
-
 
             List<GrantedAuthority> authorities = role != null
                     ? List.of(new SimpleGrantedAuthority("ROLE_" + role))
@@ -82,3 +98,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+

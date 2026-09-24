@@ -1,4 +1,4 @@
- package com.medistock.service;
+package com.medistock.service;
 
 import com.medistock.dto.MedicineRequest;
 import com.medistock.entity.Medicine;
@@ -7,6 +7,7 @@ import com.medistock.repository.MedicineRepository;
 import com.medistock.repository.SupplierRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -52,6 +53,23 @@ public class MedicineService {
     public void deleteMedicine(Integer id) {
         Medicine medicine = getMedicineById(id);
         medicineRepository.delete(medicine);
+    }
+
+    // Milestone 3: Get expired medicines
+    public List<Medicine> getExpiredMedicines() {
+        LocalDate today = LocalDate.now();
+        return medicineRepository.findExpiredMedicines(today);
+    }
+
+    // Milestone 3: Get medicines expiring within the next 30 days
+    public List<Medicine> getExpiringSoonMedicines() {
+        LocalDate today = LocalDate.now();
+        LocalDate futureDate = today.plusDays(30);
+
+        return medicineRepository.findMedicinesExpiringBetween(
+                today,
+                futureDate
+        );
     }
 
     private void mapRequestToEntity(

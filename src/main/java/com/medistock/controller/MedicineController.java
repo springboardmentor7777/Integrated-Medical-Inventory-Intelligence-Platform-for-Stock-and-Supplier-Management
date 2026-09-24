@@ -30,6 +30,22 @@ public class MedicineController {
         return ResponseEntity.ok(medicineService.getAllMedicines());
     }
 
+    // Milestone 3: Get expired medicines
+    @GetMapping("/expired")
+    public ResponseEntity<List<Medicine>> getExpiredMedicines() {
+        return ResponseEntity.ok(
+                medicineService.getExpiredMedicines()
+        );
+    }
+
+    // Milestone 3: Get medicines expiring within 30 days
+    @GetMapping("/expiring-soon")
+    public ResponseEntity<List<Medicine>> getExpiringSoonMedicines() {
+        return ResponseEntity.ok(
+                medicineService.getExpiringSoonMedicines()
+        );
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Medicine> getMedicineById(
             @PathVariable Integer id) {
@@ -50,3 +66,4 @@ public class MedicineController {
         return ResponseEntity.ok("Medicine deleted successfully");
     }
 }
+
