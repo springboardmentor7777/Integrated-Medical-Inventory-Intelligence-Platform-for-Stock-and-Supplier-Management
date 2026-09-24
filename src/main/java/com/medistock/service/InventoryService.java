@@ -14,14 +14,18 @@ public class InventoryService {
     private final InventoryRepository inventoryRepository;
     private final MedicineRepository medicineRepository;
     private final StockLogService stockLogService;
+    private final LowStockAlertService lowStockAlertService;
 
     public InventoryService(
             InventoryRepository inventoryRepository,
             MedicineRepository medicineRepository,
-            StockLogService stockLogService) {
+            StockLogService stockLogService,
+            LowStockAlertService lowStockAlertService) {
+
         this.inventoryRepository = inventoryRepository;
         this.medicineRepository = medicineRepository;
         this.stockLogService = stockLogService;
+        this.lowStockAlertService = lowStockAlertService;
     }
 
     // Add stock
@@ -61,6 +65,9 @@ public class InventoryService {
                 "ADD",
                 quantity
         );
+
+        // Check for low stock
+        lowStockAlertService.checkLowStock(medicine);
 
         return inventoryRepository.save(inventory);
     }
@@ -112,6 +119,9 @@ public class InventoryService {
                     quantityChanged
             );
         }
+
+        // Check for low stock
+        lowStockAlertService.checkLowStock(medicine);
 
         return inventoryRepository.save(inventory);
     }

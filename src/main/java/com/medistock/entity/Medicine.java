@@ -28,6 +28,9 @@ public class Medicine {
     @Column(nullable = false)
     private Integer quantity = 0;
 
+    @Column(name = "low_stock_threshold", nullable = false)
+    private Integer lowStockThreshold = 10;
+
     @Column(name = "manufacturing_date")
     private LocalDate manufacturingDate;
 
@@ -55,6 +58,13 @@ public class Medicine {
 
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public Integer getLowStockThreshold() {
+    return lowStockThreshold;
+    }
+
+    public void setLowStockThreshold(Integer lowStockThreshold) {
+    this.lowStockThreshold = lowStockThreshold;
+    }
 
     public LocalDate getManufacturingDate() { return manufacturingDate; }
     public void setManufacturingDate(LocalDate manufacturingDate) { this.manufacturingDate = manufacturingDate; }
