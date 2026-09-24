@@ -1,5 +1,6 @@
 package com.medistock.repository;
 
+import com.medistock.dto.CategoryInventoryDTO;
 import com.medistock.entity.Medicine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,4 +24,18 @@ public interface MedicineRepository extends JpaRepository<Medicine, Integer> {
             LocalDate today,
             LocalDate futureDate
     );
+
+    // Category-wise inventory analytics
+    @Query("""
+            SELECT new com.medistock.dto.CategoryInventoryDTO(
+                m.category,
+                COUNT(m.id),
+              COALESCE(SUM(i.quantity), 0L)
+            )
+            FROM Medicine m
+            LEFT JOIN Inventory i ON m.id = i.medicine.id
+            GROUP BY m.category
+            ORDER BY m.category
+            """)
+    List<CategoryInventoryDTO> getCategoryWiseInventory();
 }

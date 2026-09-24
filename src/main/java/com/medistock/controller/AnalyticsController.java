@@ -1,12 +1,14 @@
 
         package com.medistock.controller;
 
+import com.medistock.dto.CategoryInventoryDTO;
 import com.medistock.service.AnalyticsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -56,6 +58,14 @@ public class AnalyticsController {
     public ResponseEntity<Long> getExpiringSoonCount() {
         return ResponseEntity.ok(
                 analyticsService.getExpiringSoonCount()
+        );
+    }
+
+    // Get category-wise inventory analytics
+    @GetMapping("/category-wise")
+    public ResponseEntity<List<CategoryInventoryDTO>> getCategoryWiseInventory() {
+        return ResponseEntity.ok(
+                analyticsService.getCategoryWiseInventory()
         );
     }
 

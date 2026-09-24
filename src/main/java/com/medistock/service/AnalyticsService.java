@@ -1,12 +1,14 @@
 
         package com.medistock.service;
 
+import com.medistock.dto.CategoryInventoryDTO;
 import com.medistock.repository.InventoryRepository;
 import com.medistock.repository.MedicineRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -58,6 +60,11 @@ public class AnalyticsService {
                 .size();
     }
 
+    // Category-wise inventory analytics
+    public List<CategoryInventoryDTO> getCategoryWiseInventory() {
+        return medicineRepository.getCategoryWiseInventory();
+    }
+
     // Complete analytics summary
     public Map<String, Long> getAnalyticsSummary() {
 
@@ -72,3 +79,4 @@ public class AnalyticsService {
         return summary;
     }
 }
+
