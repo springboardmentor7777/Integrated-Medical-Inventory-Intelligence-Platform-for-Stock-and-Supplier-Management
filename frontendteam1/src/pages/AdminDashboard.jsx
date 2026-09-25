@@ -29,7 +29,19 @@ function AdminDashboard() {
             </div>
 
             <div className="admin-dashboard-grid">
+                <div
+    className="admin-dashboard-card"
+    onClick={() => navigate("/analytics")}
+>
+    <div className="admin-card-icon">📊</div>
 
+    <h2>Analytics</h2>
+
+    <p>
+        View inventory analytics, stock statistics,
+        expiry data and category-wise reports.
+    </p>
+</div>
                 <div
                     className="admin-dashboard-card"
                     onClick={() => navigate("/medicines")}

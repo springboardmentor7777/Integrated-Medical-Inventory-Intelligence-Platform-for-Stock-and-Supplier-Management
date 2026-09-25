@@ -1,48 +1,120 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Analytics() {
   const navigate = useNavigate();
+
+  // ================================
+  // API DATA
+  // ================================
+
+  const [summary, setSummary] = useState({
+    totalMedicines: 0,
+    totalStock: 0,
+    lowStock: 0,
+    expired: 0,
+    expiringSoon: 0,
+  });
+
+  const [categories, setCategories] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // ================================
+  // FETCH ANALYTICS DATA
+  // ================================
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        // Get summary data
+        const summaryResponse = await axios.get(
+          "http://localhost:8080/api/analytics/summary"
+        );
+
+        setSummary(summaryResponse.data);
+
+        // Get category-wise data
+        const categoryResponse = await axios.get(
+          "http://localhost:8080/api/analytics/category-wise"
+        );
+
+        setCategories(categoryResponse.data);
+
+      } catch (err) {
+        console.error("Analytics API Error:", err);
+
+        setError(
+          "Unable to load analytics data. Please make sure the backend is running."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, []);
+
+  // ================================
+  // STATISTICS CARDS
+  // ================================
 
   const stats = [
     {
       icon: "💊",
       title: "Total Medicines",
-      value: 120,
+      value: summary.totalMedicines,
     },
     {
       icon: "📦",
       title: "Total Stock",
-      value: 5430,
+      value: summary.totalStock,
     },
     {
       icon: "⚠️",
       title: "Low Stock",
-      value: 8,
+      value: summary.lowStock,
     },
     {
       icon: "❌",
       title: "Expired",
-      value: 3,
+      value: summary.expired,
     },
     {
       icon: "⏰",
       title: "Expiring Soon",
-      value: 12,
+      value: summary.expiringSoon,
     },
   ];
 
-  const categories = [
-    { name: "Tablets", value: 65 },
-    { name: "Capsules", value: 32 },
-    { name: "Syrups", value: 18 },
-    { name: "Injections", value: 10 },
-  ];
+  // ================================
+  // CALCULATE HEALTHY MEDICINES
+  // ================================
+
+  const healthyInventory = Math.max(
+    summary.totalMedicines -
+      summary.lowStock -
+      summary.expired -
+      summary.expiringSoon,
+    0
+  );
+
+  // ================================
+  // UI
+  // ================================
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 text-purple-950">
 
-      {/* Header */}
+      {/* ================================
+          HEADER
+      ================================= */}
+
       <div className="bg-gradient-to-r from-purple-800 to-purple-600 px-6 py-14 text-center text-white shadow-lg">
 
         <p className="mb-3 text-sm font-semibold tracking-[0.25em] text-purple-200">
@@ -59,167 +131,253 @@ function Analytics() {
 
       </div>
 
-      {/* Main Content */}
+
+      {/* ================================
+          MAIN CONTENT
+      ================================= */}
+
       <div className="mx-auto max-w-7xl px-6 py-10">
 
-        {/* Statistics */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+        {/* ================================
+            ERROR MESSAGE
+        ================================= */}
 
-          {stats.map((stat) => (
-            <div
-              key={stat.title}
-              className="rounded-2xl border border-purple-100 bg-white p-6 text-center shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
-            >
+        {error && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-center text-red-600">
+            {error}
+          </div>
+        )}
 
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-100 text-3xl">
-                {stat.icon}
-              </div>
 
-              <p className="text-sm font-medium text-purple-500">
-                {stat.title}
-              </p>
+        {/* ================================
+            LOADING MESSAGE
+        ================================= */}
 
-              <p className="mt-2 text-3xl font-bold text-purple-800">
-                {stat.value}
-              </p>
+        {loading ? (
+          <div className="rounded-2xl bg-white p-10 text-center shadow-md">
+
+            <p className="text-lg font-semibold text-purple-700">
+              Loading analytics...
+            </p>
+
+            <p className="mt-2 text-sm text-gray-500">
+              Fetching inventory data from the backend.
+            </p>
+
+          </div>
+        ) : (
+          <>
+            {/* ================================
+                STATISTICS
+            ================================= */}
+
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+
+              {stats.map((stat) => (
+                <div
+                  key={stat.title}
+                  className="rounded-2xl border border-purple-100 bg-white p-6 text-center shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+                >
+
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-100 text-3xl">
+                    {stat.icon}
+                  </div>
+
+                  <p className="text-sm font-medium text-purple-500">
+                    {stat.title}
+                  </p>
+
+                  <p className="mt-2 text-3xl font-bold text-purple-800">
+                    {stat.value}
+                  </p>
+
+                </div>
+              ))}
 
             </div>
-          ))}
 
-        </div>
 
-        {/* Category Section */}
-        <div className="mt-8 rounded-2xl border border-purple-100 bg-white p-7 shadow-md">
+            {/* ================================
+                CATEGORY SECTION
+            ================================= */}
 
-          <div className="mb-6">
+            <div className="mt-8 rounded-2xl border border-purple-100 bg-white p-7 shadow-md">
 
-            <p className="text-xs font-bold tracking-widest text-purple-500">
-              INVENTORY DISTRIBUTION
-            </p>
+              <div className="mb-6">
 
-            <h2 className="mt-1 text-2xl font-bold text-purple-900">
-              Category-wise Inventory
-            </h2>
+                <p className="text-xs font-bold tracking-widest text-purple-500">
+                  INVENTORY DISTRIBUTION
+                </p>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Medicine distribution by category
-            </p>
+                <h2 className="mt-1 text-2xl font-bold text-purple-900">
+                  Category-wise Inventory
+                </h2>
 
-          </div>
-
-          <div className="space-y-5">
-
-            {categories.map((category) => (
-              <div key={category.name}>
-
-                <div className="mb-2 flex justify-between text-sm">
-
-                  <span className="font-semibold text-purple-900">
-                    {category.name}
-                  </span>
-
-                  <span className="font-bold text-purple-600">
-                    {category.value}
-                  </span>
-
-                </div>
-
-                <div className="h-3 overflow-hidden rounded-full bg-purple-100">
-
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-purple-700 to-purple-400"
-                    style={{
-                      width: `${Math.min(category.value, 100)}%`,
-                    }}
-                  ></div>
-
-                </div>
+                <p className="mt-1 text-sm text-gray-500">
+                  Medicine distribution by category
+                </p>
 
               </div>
-            ))}
 
-          </div>
 
-        </div>
+              {/* Category Data */}
 
-        {/* Inventory Summary */}
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
+              {categories.length === 0 ? (
 
-          {/* Healthy Inventory */}
-          <div className="rounded-2xl border border-green-100 bg-white p-6 shadow-md">
+                <p className="text-sm text-gray-500">
+                  No category data available.
+                </p>
 
-            <p className="text-sm font-medium text-gray-500">
-              Healthy Inventory
-            </p>
+              ) : (
 
-            <p className="mt-2 text-3xl font-bold text-green-600">
-              97
-            </p>
+                <div className="space-y-5">
 
-            <p className="mt-1 text-xs text-gray-400">
-              Medicines available normally
-            </p>
+                  {categories.map((category) => (
 
-          </div>
+                    <div key={category.category}>
 
-          {/* Low Stock */}
-          <div className="rounded-2xl border border-yellow-100 bg-white p-6 shadow-md">
+                      <div className="mb-2 flex justify-between text-sm">
 
-            <p className="text-sm font-medium text-gray-500">
-              Low Stock Medicines
-            </p>
+                        <span className="font-semibold text-purple-900">
+                          {category.category}
+                        </span>
 
-            <p className="mt-2 text-3xl font-bold text-yellow-600">
-              8
-            </p>
+                        <span className="font-bold text-purple-600">
+                          {category.medicineCount}
+                        </span>
 
-            <p className="mt-1 text-xs text-gray-400">
-              Medicines requiring attention
-            </p>
+                      </div>
 
-          </div>
 
-          {/* Expired */}
-          <div className="rounded-2xl border border-red-100 bg-white p-6 shadow-md">
+                      <div className="h-3 overflow-hidden rounded-full bg-purple-100">
 
-            <p className="text-sm font-medium text-gray-500">
-              Expired Medicines
-            </p>
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-purple-700 to-purple-400"
+                          style={{
+                            width: `${Math.min(
+                              category.medicineCount,
+                              100
+                            )}%`,
+                          }}
+                        ></div>
 
-            <p className="mt-2 text-3xl font-bold text-red-500">
-              3
-            </p>
+                      </div>
 
-            <p className="mt-1 text-xs text-gray-400">
-              Medicines requiring removal
-            </p>
 
-          </div>
+                      <p className="mt-1 text-xs text-gray-400">
+                        Total Stock: {category.totalStock}
+                      </p>
 
-        </div>
+                    </div>
 
-        {/* Navigation Buttons */}
-        <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                  ))}
 
-          {/* Back to Dashboard */}
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="flex-1 rounded-xl bg-white px-6 py-4 font-semibold text-purple-700 shadow-md transition hover:-translate-y-1 hover:bg-purple-50 hover:shadow-lg"
-          >
-            ← Back to Dashboard
-          </button>
+                </div>
 
-          {/* Go to Reports */}
-          <button
-            onClick={() => navigate("/reports")}
-            className="flex-1 rounded-xl bg-purple-700 px-6 py-4 font-semibold text-white shadow-md transition hover:-translate-y-1 hover:bg-purple-800 hover:shadow-lg"
-          >
-            Generate Reports →
-          </button>
+              )}
 
-        </div>
+            </div>
+
+
+            {/* ================================
+                INVENTORY SUMMARY
+            ================================= */}
+
+            <div className="mt-8 grid gap-6 md:grid-cols-3">
+
+
+              {/* Healthy Inventory */}
+
+              <div className="rounded-2xl border border-green-100 bg-white p-6 shadow-md">
+
+                <p className="text-sm font-medium text-gray-500">
+                  Healthy Inventory
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-green-600">
+                  {healthyInventory}
+                </p>
+
+                <p className="mt-1 text-xs text-gray-400">
+                  Medicines available normally
+                </p>
+
+              </div>
+
+
+              {/* Low Stock */}
+
+              <div className="rounded-2xl border border-yellow-100 bg-white p-6 shadow-md">
+
+                <p className="text-sm font-medium text-gray-500">
+                  Low Stock Medicines
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-yellow-600">
+                  {summary.lowStock}
+                </p>
+
+                <p className="mt-1 text-xs text-gray-400">
+                  Medicines requiring attention
+                </p>
+
+              </div>
+
+
+              {/* Expired */}
+
+              <div className="rounded-2xl border border-red-100 bg-white p-6 shadow-md">
+
+                <p className="text-sm font-medium text-gray-500">
+                  Expired Medicines
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-red-500">
+                  {summary.expired}
+                </p>
+
+                <p className="mt-1 text-xs text-gray-400">
+                  Medicines requiring removal
+                </p>
+
+              </div>
+
+            </div>
+
+
+            {/* ================================
+                NAVIGATION BUTTONS
+            ================================= */}
+
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+
+
+              {/* Back to Dashboard */}
+
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="flex-1 rounded-xl bg-white px-6 py-4 font-semibold text-purple-700 shadow-md transition hover:-translate-y-1 hover:bg-purple-50 hover:shadow-lg"
+              >
+                ← Back to Dashboard
+              </button>
+
+
+              {/* Go to Reports */}
+
+              <button
+                onClick={() => navigate("/reports")}
+                className="flex-1 rounded-xl bg-purple-700 px-6 py-4 font-semibold text-white shadow-md transition hover:-translate-y-1 hover:bg-purple-800 hover:shadow-lg"
+              >
+                Generate Reports →
+              </button>
+
+            </div>
+
+          </>
+        )}
 
       </div>
+
     </div>
   );
 }

@@ -724,18 +724,6 @@ function Reports() {
 {/* Navigation */}
 <div className="mt-8 flex flex-col gap-4 sm:flex-row">
 
-  <button
-    onClick={() => navigate("/analytics")}
-    className="flex-1 rounded-xl bg-white px-6 py-4 font-semibold text-purple-700 shadow-md transition hover:-translate-y-1 hover:bg-purple-50 hover:shadow-lg"
-  >⬅️Back to Analytics
-  </button>
-
-  <button
-    onClick={() => navigate("/dashboard")}
-    className="flex-1 rounded-xl bg-purple-700 px-6 py-4 font-semibold text-white shadow-md transition hover:-translate-y-1 hover:bg-purple-800 hover:shadow-lg"
-  >
-    Back to Dashboard ➡️ 
-  </button>
 
 </div>
     </div>

@@ -543,7 +543,47 @@ function Dashboard() {
                 </div>
 
                 <section className="dashboard-cards">
+                    <div
+    className="dashboard-card clickable-card"
+    onClick={() =>
+        navigate("/analytics")
+    }
+>
 
+    <div className="card-top">
+
+        <div className="card-icon">
+            📊
+        </div>
+
+        <span className="card-arrow">
+            ↗
+        </span>
+
+    </div>
+
+    <h3>
+        Analytics
+    </h3>
+
+    <p>
+        View inventory statistics, expiry
+        information and category-wise analytics.
+    </p>
+
+    <div className="card-bottom">
+
+        <span>
+            Open Analytics
+        </span>
+
+        <span>
+            →
+        </span>
+
+    </div>
+
+</div>
                     <div
                         className="dashboard-card clickable-card"
                         onClick={() =>
