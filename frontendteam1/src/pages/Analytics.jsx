@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import { useAuth } from "../context/AuthContext";
 function Analytics() {
   const navigate = useNavigate();
-
+ const { token } = useAuth();
   // ================================
   // API DATA
   // ================================
@@ -26,39 +26,43 @@ function Analytics() {
   // FETCH ANALYTICS DATA
   // ================================
 
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        setLoading(true);
-        setError("");
+useEffect(() => {
+    const loadAnalytics = async () => {
 
-        // Get summary data
-        const summaryResponse = await axios.get(
-          "http://localhost:8080/api/analytics/summary"
-        );
+        if (!token) {
+            setError("Please login again.");
+            setLoading(false);
+            return;
+        }
 
-        setSummary(summaryResponse.data);
+        try {
+            const headers = {
+                Authorization: `Bearer ${token}`,
+            };
 
-        // Get category-wise data
-        const categoryResponse = await axios.get(
-          "http://localhost:8080/api/analytics/category-wise"
-        );
+            const summaryResponse = await axios.get(
+                "http://localhost:8080/api/analytics/summary",
+                { headers }
+            );
 
-        setCategories(categoryResponse.data);
+            const categoryResponse = await axios.get(
+                "http://localhost:8080/api/analytics/category-wise",
+                { headers }
+            );
 
-      } catch (err) {
-        console.error("Analytics API Error:", err);
+            setSummary(summaryResponse.data);
+            setCategories(categoryResponse.data);
 
-        setError(
-          "Unable to load analytics data. Please make sure the backend is running."
-        );
-      } finally {
-        setLoading(false);
-      }
+        } catch (error) {
+            console.error("Analytics API Error:", error);
+            setError("Unable to load analytics data.");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    fetchAnalytics();
-  }, []);
+    loadAnalytics();
+}, [token]);
 
   // ================================
   // STATISTICS CARDS
