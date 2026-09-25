@@ -29,7 +29,7 @@ public class Medicine {
     private Integer quantity = 0;
 
     @Column(name = "low_stock_threshold", nullable = false)
-    private Integer lowStockThreshold = 10;
+    private Integer lowStockThreshold = 20;
 
     @Column(name = "manufacturing_date")
     private LocalDate manufacturingDate;
