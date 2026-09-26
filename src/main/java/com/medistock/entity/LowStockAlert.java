@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "low_stock_alerts")
+@Table(name = "alerts")
 public class LowStockAlert {
 
     @Id
@@ -15,10 +15,10 @@ public class LowStockAlert {
     @JoinColumn(name = "medicine_id", nullable = false)
     private Medicine medicine;
 
-    @Column(nullable = false)
+    @Column(name = "current_value", nullable = false)
     private Integer currentQuantity;
 
-    @Column(nullable = false)
+    @Column(name = "threshold_value", nullable = false)
     private Integer threshold;
 
     @Column(nullable = false)
