@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 function Reports() {
+    const navigate = useNavigate();
   const [category, setCategory] = useState("All Categories");
   const [reportType, setReportType] = useState("Inventory Report");
   const [fromDate, setFromDate] = useState("");
@@ -867,8 +868,26 @@ function Reports() {
             </div>
 
           </div>
+          {/* Navigation Buttons */}
+<div className="mt-6 flex flex-col gap-4 sm:flex-row">
 
+    {/* Dashboard */}
+    <button
+        onClick={() => navigate("/dashboard")}
+        className="flex-1 rounded-xl bg-white px-6 py-4 font-semibold text-purple-700 shadow-md transition hover:-translate-y-1 hover:bg-purple-50 hover:shadow-lg"
+    >
+        🏠 Back to Dashboard
+    </button>
 
+    {/* Analytics */}
+    <button
+        onClick={() => navigate("/analytics")}
+        className="flex-1 rounded-xl bg-purple-700 px-6 py-4 font-semibold text-white shadow-md transition hover:-translate-y-1 hover:bg-purple-800 hover:shadow-lg"
+    >
+        📊 View Analytics →
+    </button>
+
+</div>
           {/* =====================================================
             FOOTER
         ====================================================== */}

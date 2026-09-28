@@ -76,7 +76,19 @@ function AdminDashboard() {
                     <h2>Medicine Search</h2>
                     <p>Search and filter medicines by category and supplier.</p>
                 </div>
+                <div
+    className="admin-dashboard-card"
+    onClick={() => navigate("/reports")}
+>
+    <div className="admin-card-icon">📄</div>
 
+    <h2>Reports</h2>
+
+    <p>
+        Generate and view inventory reports,
+        stock details and expiry information.
+    </p>
+</div>
             </div>
 
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import {
   getSuppliers,
   addSupplier,
@@ -22,7 +23,7 @@ function Suppliers() {
     phone: "",
     address: "",
   });
-
+const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -257,28 +258,34 @@ function Suppliers() {
       {/* =====================================================
           HEADER
           ===================================================== */}
-
-      <div className="supplier-header">
-        <div>
-          <h1>Supplier Management</h1>
-          <p>
+<div className="supplier-header">
+    <div>
+        <h1>Supplier Management</h1>
+        <p>
             Manage your medicine suppliers
-          </p>
-        </div>
+        </p>
+    </div>
 
-        {canEdit && (
-          <button
+    {canEdit && (
+        <button
             className="add-supplier-button"
             onClick={() => {
-              setShowForm(true);
-              setEditingId(null);
-              setError("");
+                setShowForm(true);
+                setEditingId(null);
+                setError("");
             }}
-          >
+        >
             + Add Supplier
-          </button>
-        )}
-      </div>
+        </button>
+    )}
+
+    <button
+        className="dashboard-button"
+        onClick={() => navigate("/dashboard")}
+    >
+        ← Dashboard
+    </button>
+</div>
 
       {/* =====================================================
           STATISTICS

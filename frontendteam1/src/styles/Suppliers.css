@@ -57,7 +57,12 @@
 
   text-align: left;
 }
-
+.supplier-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
 .supplier-header h1 {
   margin: 0 0 7px;
 
@@ -246,7 +251,22 @@
   transition:
           transform 0.25s ease;
 }
+.dashboard-button {
+    border: none;
+    background: #f3e8ff;
+    color: #7e22ce;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
 
+.dashboard-button:hover {
+    background: #e9d5ff;
+    color: #6b21a8;
+}
 .supplier-stat-card:hover
 .supplier-stat-icon {
   transform:
