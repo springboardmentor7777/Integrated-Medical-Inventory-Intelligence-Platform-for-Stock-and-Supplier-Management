@@ -8,7 +8,7 @@ const API_URL = "http://localhost:8082/api";
 
 const MedicineDashboard = () => {
 
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [medicines, setMedicines] = useState([]);
@@ -115,19 +115,35 @@ const MedicineDashboard = () => {
 
     const totalMedicines = medicinesWithStock.length;
 
-    const availableStock = medicinesWithStock.filter(
-        (medicine) => medicine.quantity > 10
-    ).length;
+const getThreshold = (medicine) => {
+    const inventoryItem = inventory.find(
+        (item) => item.medicineId === medicine.id
+    );
 
-    const lowStock = medicinesWithStock.filter(
-        (medicine) =>
-            medicine.quantity > 0 &&
-            medicine.quantity <= 10
-    ).length;
+    return (
+        medicine.reorderLevel ??
+        medicine.reorderLevelQuantity ??
+        medicine.thresholdStock ??
+        inventoryItem?.reorderLevel ??
+        inventoryItem?.reorderLevelQuantity ??
+        inventoryItem?.thresholdStock ??
+        10
+    );
+};
 
-    const outOfStock = medicinesWithStock.filter(
-        (medicine) => medicine.quantity === 0
-    ).length;
+const availableStock = medicinesWithStock.filter(
+    (medicine) => medicine.quantity > getThreshold(medicine)
+).length;
+
+const lowStock = medicinesWithStock.filter(
+    (medicine) =>
+        medicine.quantity > 0 &&
+        medicine.quantity <= getThreshold(medicine)
+).length;
+
+const outOfStock = medicinesWithStock.filter(
+    (medicine) => medicine.quantity === 0
+).length;
 
 
     const handleDelete = async (id) => {
@@ -273,7 +289,7 @@ const MedicineDashboard = () => {
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xl text-blue-600">📦</div>
 
                         <div>
-                            <p>Available Stock</p>
+                            <p>Well Stock</p>
                             <h3>{availableStock}</h3>
                         </div>
                     </div>
@@ -302,15 +318,19 @@ const MedicineDashboard = () => {
 
 
                 {loading && (
-                    <p>Loading medicines...</p>
-                )}
+    <div className="rounded-xl border border-stone-200 bg-white px-5 py-8 text-center shadow-sm">
+        <p className="text-sm font-medium text-stone-600">
+            Loading medicines...
+        </p>
+    </div>
+)}
 
 
                 {error && (
-                    <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                        {error}
-                    </p>
-                )}
+    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        {error}
+    </div>
+)}
 
 
                 {!loading && !error && (

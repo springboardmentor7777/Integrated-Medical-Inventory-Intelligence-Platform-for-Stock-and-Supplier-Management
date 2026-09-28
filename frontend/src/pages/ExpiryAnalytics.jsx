@@ -14,13 +14,15 @@ import { EXPIRY_STATUS, getExpiryStatus } from "../utils/expiryUtils";
 const API_URL = "http://localhost:8082/api";
 
 // Milestone 3 Frontend 1 — Expiry + Inventory Analytics UI.
-// Uses only data returned by the backend. No expiry dates or batch numbers are generated on the frontend.
+// Uses only data returned by the backend.
+// No expiry dates or batch numbers are generated on the frontend.
 const ExpiryAnalytics = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [rawMedicines, setRawMedicines] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -34,45 +36,56 @@ const ExpiryAnalytics = () => {
 
         const loadMedicines = async () => {
             setLoading(true);
+            setError("");
 
             try {
-                // Fetch medicines and inventory in parallel, same as
-                // MedicineDashboard, so real stock quantities are shown
-                // instead of always falling back to 0.
-                const [medicinesResponse, inventoryResponse] = await Promise.all([
-                    authFetch(`${API_URL}/medicines`, {
-                        method: "GET",
-                        headers: getHeaders(),
-                    }),
-                    authFetch(`${API_URL}/inventory`, {
-                        method: "GET",
-                        headers: getHeaders(),
-                    }),
-                ]);
+                // Fetch medicines and inventory in parallel so that
+                // real stock quantities are shown.
+                const [medicinesResponse, inventoryResponse] =
+                    await Promise.all([
+                        authFetch(`${API_URL}/medicines`, {
+                            method: "GET",
+                            headers: getHeaders(),
+                        }),
+
+                        authFetch(`${API_URL}/inventory`, {
+                            method: "GET",
+                            headers: getHeaders(),
+                        }),
+                    ]);
 
                 if (!medicinesResponse.ok) {
-                    throw new Error(`Medicine API failed: ${medicinesResponse.status}`);
+                    throw new Error(
+                        `Medicine API failed: ${medicinesResponse.status}`
+                    );
                 }
 
                 const medicinesData = await medicinesResponse.json();
 
-                if (!Array.isArray(medicinesData) || medicinesData.length === 0) {
-                    throw new Error("No medicines returned");
+                if (!Array.isArray(medicinesData)) {
+                    throw new Error("Invalid medicine data returned by backend.");
                 }
 
-                // Inventory is optional — if it fails, quantities just
-                // stay at 0 rather than the whole page falling back to mock.
+                // Inventory is optional.
+                // If it fails, medicine data can still be displayed,
+                // with stock quantity falling back to 0.
                 let inventoryData = [];
 
                 if (inventoryResponse.ok) {
-                    inventoryData = await inventoryResponse.json();
+                    const parsedInventory = await inventoryResponse.json();
+
+                    if (Array.isArray(parsedInventory)) {
+                        inventoryData = parsedInventory;
+                    }
                 }
 
                 const getQuantity = (medicineId) => {
                     const item = inventoryData.find(
-                        (inventoryItem) => inventoryItem.medicineId === medicineId
+                        (inventoryItem) =>
+                            inventoryItem.medicineId === medicineId
                     );
-                    return item ? item.quantity : 0;
+
+                    return item ? Number(item.quantity) || 0 : 0;
                 };
 
                 const medicinesWithStock = medicinesData.map((medicine) => ({
@@ -81,11 +94,15 @@ const ExpiryAnalytics = () => {
                 }));
 
                 setRawMedicines(medicinesWithStock);
-
             } catch (error) {
                 console.error("Unable to load expiry data:", error);
+
                 setRawMedicines([]);
 
+                setError(
+                    error.message ||
+                        "Unable to load expiry data. Please check the backend and try again."
+                );
             } finally {
                 setLoading(false);
             }
@@ -95,6 +112,7 @@ const ExpiryAnalytics = () => {
             loadMedicines();
         } else {
             setRawMedicines([]);
+            setError("Authorization token is missing.");
             setLoading(false);
         }
     }, [user?.token]);
@@ -109,17 +127,26 @@ const ExpiryAnalytics = () => {
         [rawMedicines]
     );
 
+    // Get all available medicine categories.
     const categories = useMemo(
         () =>
             Array.from(
-                new Set(medicinesWithStatus.map((m) => m.category).filter(Boolean))
+                new Set(
+                    medicinesWithStatus
+                        .map((medicine) => medicine.category)
+                        .filter(Boolean)
+                )
             ).sort(),
         [medicinesWithStatus]
     );
 
+    // Apply search, expiry-status and category filters.
     const filteredMedicines = useMemo(() => {
         return medicinesWithStatus.filter((medicine) => {
-            const matchesSearch = medicine.name
+            const medicineName = medicine.name || "";
+            const medicineCategory = medicine.category || "";
+
+            const matchesSearch = medicineName
                 .toLowerCase()
                 .includes(search.toLowerCase());
 
@@ -127,11 +154,17 @@ const ExpiryAnalytics = () => {
                 statusFilter === "" || medicine.status === statusFilter;
 
             const matchesCategory =
-                categoryFilter === "" || medicine.category === categoryFilter;
+                categoryFilter === "" ||
+                medicineCategory === categoryFilter;
 
             return matchesSearch && matchesStatus && matchesCategory;
         });
-    }, [medicinesWithStatus, search, statusFilter, categoryFilter]);
+    }, [
+        medicinesWithStatus,
+        search,
+        statusFilter,
+        categoryFilter,
+    ]);
 
     const handleResetFilters = () => {
         setSearch("");
@@ -139,59 +172,80 @@ const ExpiryAnalytics = () => {
         setCategoryFilter("");
     };
 
-    // Summary + chart data is based on the FULL dataset (not the filtered
-    // table), so the dashboard always reflects the overall inventory.
+    // Summary and chart data are based on the FULL dataset,
+    // not the filtered table.
     const summary = useMemo(() => {
         const total = medicinesWithStatus.length;
 
         const expired = medicinesWithStatus.filter(
-            (m) => m.status === EXPIRY_STATUS.EXPIRED
+            (medicine) =>
+                medicine.status === EXPIRY_STATUS.EXPIRED
         ).length;
 
         const expiringSoon = medicinesWithStatus.filter(
-            (m) => m.status === EXPIRY_STATUS.EXPIRING_SOON
+            (medicine) =>
+                medicine.status === EXPIRY_STATUS.EXPIRING_SOON
         ).length;
 
         const safe = medicinesWithStatus.filter(
-            (m) => m.status === EXPIRY_STATUS.SAFE
+            (medicine) =>
+                medicine.status === EXPIRY_STATUS.SAFE
         ).length;
 
-        return { total, expired, expiringSoon, safe };
+        return {
+            total,
+            expired,
+            expiringSoon,
+            safe,
+        };
     }, [medicinesWithStatus]);
 
+    // Count medicines by category.
     const categoryCounts = useMemo(() => {
         const counts = {};
 
         medicinesWithStatus.forEach((medicine) => {
             const key = medicine.category || "Uncategorized";
+
             counts[key] = (counts[key] || 0) + 1;
         });
 
-        return Object.entries(counts).map(([category, count]) => ({
-            category,
-            count,
-        }));
+        return Object.entries(counts).map(
+            ([category, count]) => ({
+                category,
+                count,
+            })
+        );
     }, [medicinesWithStatus]);
 
-    // Inventory-focused metrics (distinct from the expiry-status summary
-    // above) — total stock on hand, category spread, bg-amber-100 text-amber-700 items,
-    // and an overall "needs attention" count (expired + expiring soon).
+    // Inventory-focused metrics.
     const inventoryStats = useMemo(() => {
         const totalStockQuantity = medicinesWithStatus.reduce(
-            (sum, m) => sum + (Number(m.quantity) || 0),
+            (sum, medicine) =>
+                sum + (Number(medicine.quantity) || 0),
             0
         );
 
         const categoriesTracked = categories.length;
 
         const lowStockCount = medicinesWithStatus.filter(
-            (m) =>
-                m.reorderLevel !== undefined &&
-                m.reorderLevel !== null &&
-                Number(m.quantity) <= Number(m.reorderLevel)
+            (medicine) => {
+                const reorderLevel =
+                    medicine.reorderLevel ??
+                    medicine.reorderLevelQuantity ??
+                    medicine.thresholdStock ??
+                    10;
+
+                return (
+                    Number(medicine.quantity) > 0 &&
+                    Number(medicine.quantity) <=
+                        Number(reorderLevel)
+                );
+            }
         ).length;
 
-        const needsAttentionCount = summary.expired + summary.expiringSoon;
+        const needsAttentionCount =
+            summary.expired + summary.expiringSoon;
 
         return {
             totalStockQuantity,
@@ -202,41 +256,37 @@ const ExpiryAnalytics = () => {
     }, [medicinesWithStatus, categories, summary]);
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-800 text-left">
-
-            <header className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-5 py-5 md:px-8">
-                <div>
-                    <h1>MediStock</h1>
-                    <p>Expiry + Inventory Analytics</p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3 text-sm">
-                    <span>Welcome, {user?.name}</span>
-                    <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-600">{user?.role}</span>
-                    <button onClick={logout} className="rounded-lg border-0 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200">
-                        Logout
-                    </button>
-                </div>
-            </header>
-
+        <div className="min-h-screen bg-slate-50 text-left text-slate-800">
             <main className="mx-auto w-full max-w-6xl px-5 py-8 md:px-8">
 
+                {/* Page Heading */}
                 <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
                     <div>
-                        <h2>Expiry Dashboard</h2>
-                        <p>Track medicine expiry status and inventory analytics</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+                            Analytics
+                        </p>
+
+                        <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+                            Expiry Dashboard
+                        </h1>
+
+                        <p className="mt-1 text-sm text-slate-500">
+                            Track medicine expiry status and inventory analytics
+                        </p>
                     </div>
 
                     <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                         <button
-                            className="rounded-lg border-0 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-100"
+                            type="button"
+                            className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-100"
                             onClick={() => navigate("/medicines")}
                         >
                             💊 Medicines
                         </button>
 
                         <button
-                            className="rounded-lg border-0 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-100"
+                            type="button"
+                            className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-100"
                             onClick={() => navigate("/inventory")}
                         >
                             📦 Inventory
@@ -244,10 +294,39 @@ const ExpiryAnalytics = () => {
                     </div>
                 </div>
 
+                {/* Error */}
+                {error && !loading && (
+                    <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4">
+                        <p className="text-sm font-semibold text-red-700">
+                            Unable to load expiry analytics
+                        </p>
+
+                        <p className="mt-1 text-sm text-red-600">
+                            {error}
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={() => window.location.reload()}
+                            className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
+
+                {/* Loading */}
                 {loading ? (
-                    <p>Loading expiry data...</p>
+                    <div className="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+                        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+
+                        <p className="mt-4 text-sm font-medium text-slate-500">
+                            Loading expiry data...
+                        </p>
+                    </div>
                 ) : (
                     <>
+                        {/* Expiry Summary */}
                         <ExpirySummaryCards
                             total={summary.total}
                             expired={summary.expired}
@@ -255,37 +334,54 @@ const ExpiryAnalytics = () => {
                             safe={summary.safe}
                         />
 
-                        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-6 mb-6">
-                            <div className="mb-4 [&_h2]:m-0 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900 [&_p]:mt-1 [&_p]:text-sm [&_p]:text-slate-500">
-                                <div>
-                                    <h2>Inventory Analytics</h2>
-                                    <p>Overview of medicines by expiry status and category</p>
-                                </div>
+                        {/* Inventory Analytics */}
+                        <section className="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                            <div className="mb-5">
+                                <h2 className="text-xl font-semibold text-slate-900">
+                                    Inventory Analytics
+                                </h2>
+
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Overview of medicines by expiry status and category
+                                </p>
                             </div>
 
                             <InventoryAnalyticsCards
-                                totalStockQuantity={inventoryStats.totalStockQuantity}
-                                categoriesTracked={inventoryStats.categoriesTracked}
-                                lowStockCount={inventoryStats.lowStockCount}
-                                needsAttentionCount={inventoryStats.needsAttentionCount}
+                                totalStockQuantity={
+                                    inventoryStats.totalStockQuantity
+                                }
+                                categoriesTracked={
+                                    inventoryStats.categoriesTracked
+                                }
+                                lowStockCount={
+                                    inventoryStats.lowStockCount
+                                }
+                                needsAttentionCount={
+                                    inventoryStats.needsAttentionCount
+                                }
                             />
 
                             <ExpiryCharts
                                 statusCounts={{
                                     expired: summary.expired,
-                                    expiringSoon: summary.expiringSoon,
+                                    expiringSoon:
+                                        summary.expiringSoon,
                                     safe: summary.safe,
                                 }}
                                 categoryCounts={categoryCounts}
                             />
                         </section>
 
+                        {/* Expiry Table */}
                         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-                            <div className="mb-4 [&_h2]:m-0 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900 [&_p]:mt-1 [&_p]:text-sm [&_p]:text-slate-500">
-                                <div>
-                                    <h2>Expiry Table</h2>
-                                    <p>Search and filter medicines by expiry status</p>
-                                </div>
+                            <div className="mb-5">
+                                <h2 className="text-xl font-semibold text-slate-900">
+                                    Expiry Table
+                                </h2>
+
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Search and filter medicines by expiry status
+                                </p>
                             </div>
 
                             <ExpiryFilters
@@ -299,13 +395,18 @@ const ExpiryAnalytics = () => {
                                 onReset={handleResetFilters}
                             />
 
-                            <ExpiryTable medicines={filteredMedicines} />
+                            <ExpiryTable
+                                medicines={filteredMedicines}
+                            />
+
+                            <div className="mt-4 text-xs text-slate-400">
+                                Showing {filteredMedicines.length} of{" "}
+                                {medicinesWithStatus.length} medicines
+                            </div>
                         </section>
                     </>
                 )}
-
             </main>
-
         </div>
     );
 };

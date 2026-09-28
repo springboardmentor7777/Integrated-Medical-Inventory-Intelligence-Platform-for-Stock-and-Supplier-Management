@@ -18,92 +18,172 @@ const STATUS_COLORS = {
   Safe: "#16a34a",
 };
 
-const ExpiryCharts = ({ statusCounts, categoryCounts }) => {
+const ExpiryCharts = ({ statusCounts = {}, categoryCounts = [] }) => {
   const statusData = [
-    { name: "Expired", value: statusCounts.expired },
-    { name: "Expiring Soon", value: statusCounts.expiringSoon },
-    { name: "Safe", value: statusCounts.safe },
+    {
+      name: "Expired",
+      value: Number(statusCounts.expired) || 0,
+    },
+    {
+      name: "Expiring Soon",
+      value: Number(statusCounts.expiringSoon) || 0,
+    },
+    {
+      name: "Safe",
+      value: Number(statusCounts.safe) || 0,
+    },
   ];
 
   const categoryData = categoryCounts.map((item) => ({
-    category: item.category,
-    count: item.count,
+    category: item.category || "Uncategorized",
+    count: Number(item.count) || 0,
   }));
 
-  const totalMedicines = statusData.reduce((sum, item) => sum + item.value, 0);
+  const totalMedicines = statusData.reduce(
+    (sum, item) => sum + item.value,
+    0
+  );
 
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+
+      {/* Expiry Status Chart */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4">
           <h3 className="text-lg font-semibold text-slate-900">
             Expired vs Expiring Soon vs Safe
           </h3>
+
           <p className="mt-1 text-sm text-slate-500">
             Distribution of medicines by expiry status.
           </p>
         </div>
 
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={statusData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={72}
-                outerRadius={105}
-                paddingAngle={3}
-                labelLine={false}
-              >
-                {statusData.map((entry) => (
-                  <Cell key={entry.name} fill={STATUS_COLORS[entry.name]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend verticalAlign="bottom" height={36} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        {totalMedicines === 0 ? (
+          <div className="flex h-80 items-center justify-center">
+            <div className="text-center">
+              <p className="text-sm font-medium text-slate-600">
+                No expiry data available
+              </p>
 
-        <div className="mt-2 text-center">
-          <span className="text-2xl font-bold text-slate-900">{totalMedicines}</span>
-          <span className="ml-2 text-sm text-slate-500">Medicines</span>
-        </div>
+              <p className="mt-1 text-xs text-slate-400">
+                Add medicines with expiry dates to view the chart.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={72}
+                    outerRadius={105}
+                    paddingAngle={3}
+                    labelLine={false}
+                  >
+                    {statusData.map((entry) => (
+                      <Cell
+                        key={entry.name}
+                        fill={STATUS_COLORS[entry.name]}
+                      />
+                    ))}
+                  </Pie>
+
+                  <Tooltip />
+
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="mt-2 text-center">
+              <span className="text-2xl font-bold text-slate-900">
+                {totalMedicines}
+              </span>
+
+              <span className="ml-2 text-sm text-slate-500">
+                Medicines
+              </span>
+            </div>
+          </>
+        )}
       </div>
 
+      {/* Category Chart */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4">
           <h3 className="text-lg font-semibold text-slate-900">
             Medicines by Category
           </h3>
+
           <p className="mt-1 text-sm text-slate-500">
             Number of medicine items in each category.
           </p>
         </div>
 
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={categoryData}
-              layout="vertical"
-              margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" allowDecimals={false} />
-              <YAxis
-                type="category"
-                dataKey="category"
-                width={100}
-                tick={{ fontSize: 12 }}
-              />
-              <Tooltip />
-              <Bar dataKey="count" name="Medicines" fill="#2563eb" radius={[0, 6, 6, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        {categoryData.length === 0 ? (
+          <div className="flex h-80 items-center justify-center">
+            <div className="text-center">
+              <p className="text-sm font-medium text-slate-600">
+                No category data available
+              </p>
+
+              <p className="mt-1 text-xs text-slate-400">
+                Medicine categories will appear here once available.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={categoryData}
+                layout="vertical"
+                margin={{
+                  top: 5,
+                  right: 20,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  horizontal={false}
+                />
+
+                <XAxis
+                  type="number"
+                  allowDecimals={false}
+                />
+
+                <YAxis
+                  type="category"
+                  dataKey="category"
+                  width={100}
+                  tick={{ fontSize: 12 }}
+                />
+
+                <Tooltip />
+
+                <Bar
+                  dataKey="count"
+                  name="Medicines"
+                  fill="#2563eb"
+                  radius={[0, 6, 6, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
     </div>
   );

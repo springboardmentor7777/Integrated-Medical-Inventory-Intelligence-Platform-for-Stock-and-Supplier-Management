@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 const API_URL = "http://localhost:8082/api";
 
 const Inventory = () => {
-
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -23,28 +22,25 @@ const Inventory = () => {
 
     const [newInventory, setNewInventory] = useState({
         medicineId: "",
-        quantity: ""
+        quantity: "",
     });
 
     const getHeaders = () => ({
         "Content-Type": "application/json",
-        Authorization: `Bearer ${user?.token}`
+        Authorization: `Bearer ${user?.token}`,
     });
-
 
     // =========================
     // GET ALL INVENTORY
     // =========================
 
     const fetchInventory = async () => {
-
         try {
-
             const response = await authFetch(
                 `${API_URL}/inventory`,
                 {
                     method: "GET",
-                    headers: getHeaders()
+                    headers: getHeaders(),
                 }
             );
 
@@ -56,14 +52,9 @@ const Inventory = () => {
 
             const data = await response.json();
 
-            setInventory(data);
-
+            setInventory(Array.isArray(data) ? data : []);
         } catch (error) {
-
-            console.error(
-                "Error fetching inventory:",
-                error
-            );
+            console.error("Error fetching inventory:", error);
 
             setError(
                 "Unable to load inventory from the server."
@@ -71,21 +62,18 @@ const Inventory = () => {
         }
     };
 
-
     // =========================
     // GET MEDICINES
     // Used for Add Inventory
     // =========================
 
     const fetchMedicines = async () => {
-
         try {
-
             const response = await authFetch(
                 `${API_URL}/medicines`,
                 {
                     method: "GET",
-                    headers: getHeaders()
+                    headers: getHeaders(),
                 }
             );
 
@@ -97,10 +85,8 @@ const Inventory = () => {
 
             const data = await response.json();
 
-            setMedicines(data);
-
+            setMedicines(Array.isArray(data) ? data : []);
         } catch (error) {
-
             console.error(
                 "Error fetching medicines:",
                 error
@@ -108,86 +94,76 @@ const Inventory = () => {
         }
     };
 
-
     // =========================
     // LOAD DATA
     // =========================
 
     const loadData = async () => {
-
         try {
-
             setLoading(true);
             setError("");
 
             await Promise.all([
                 fetchInventory(),
-                fetchMedicines()
+                fetchMedicines(),
             ]);
-
+        } catch (error) {
+            console.error("Error loading inventory:", error);
+            setError("Unable to load inventory.");
         } finally {
-
             setLoading(false);
         }
     };
 
-
     useEffect(() => {
-
         if (user?.token) {
             loadData();
         } else {
             setLoading(false);
             setError("Authorization token is missing.");
         }
-
     }, [user?.token]);
-
 
     // =========================
     // UPDATE STOCK
     // =========================
 
-    const updateStock = async (inventoryId, currentQuantity, change) => {
-
+    const updateStock = async (
+        inventoryId,
+        currentQuantity,
+        change
+    ) => {
         const newQuantity =
-            currentQuantity + change;
+            Number(currentQuantity) + change;
 
         if (newQuantity < 0) {
             return;
         }
 
         try {
-
             const response = await authFetch(
                 `${API_URL}/inventory/${inventoryId}/stock`,
                 {
                     method: "PUT",
-
                     headers: getHeaders(),
-
                     body: JSON.stringify({
-                        quantity: newQuantity
-                    })
+                        quantity: newQuantity,
+                    }),
                 }
             );
 
-
             if (!response.ok) {
-
                 const errorText =
                     await response.text();
 
                 throw new Error(
                     errorText ||
-                    `Stock update failed: ${response.status}`
+                        `Stock update failed: ${response.status}`
                 );
             }
 
-
             const updatedInventory =
                 await response.json();
-
 
             setInventory((currentInventory) =>
                 currentInventory.map((item) =>
@@ -196,161 +172,153 @@ const Inventory = () => {
                         : item
                 )
             );
-
-
         } catch (error) {
-
             console.error(
                 "Error updating stock:",
                 error
             );
 
             alert(
-                "Failed to update stock."
+                error.message ||
+                    "Failed to update stock."
             );
         }
     };
-
 
     // =========================
     // ADD INVENTORY
     // =========================
 
     const handleAddInventory = async (e) => {
-
         e.preventDefault();
 
         if (
             !newInventory.medicineId ||
             newInventory.quantity === ""
         ) {
-            alert("Please select a medicine and enter quantity.");
+            alert(
+                "Please select a medicine and enter quantity."
+            );
             return;
         }
 
+        const quantity = Number(
+            newInventory.quantity
+        );
+
+        if (Number.isNaN(quantity) || quantity < 0) {
+            alert("Please enter a valid quantity.");
+            return;
+        }
 
         try {
-
             const response = await authFetch(
                 `${API_URL}/inventory`,
                 {
                     method: "POST",
-
                     headers: getHeaders(),
-
                     body: JSON.stringify({
                         medicineId: Number(
                             newInventory.medicineId
                         ),
-
-                        quantity: Number(
-                            newInventory.quantity
-                        )
-                    })
+                        quantity,
+                    }),
                 }
             );
 
-
             if (!response.ok) {
-
                 const errorText =
                     await response.text();
 
                 throw new Error(
                     errorText ||
-                    `Add inventory failed: ${response.status}`
+                        `Add inventory failed: ${response.status}`
                 );
             }
-
 
             const addedInventory =
                 await response.json();
 
-
             setInventory((currentInventory) => [
                 ...currentInventory,
-                addedInventory
+                addedInventory,
             ]);
-
 
             setNewInventory({
                 medicineId: "",
-                quantity: ""
+                quantity: "",
             });
 
             setShowAddForm(false);
-
-
         } catch (error) {
-
             console.error(
                 "Error adding inventory:",
                 error
             );
 
             alert(
-                "Failed to add inventory."
+                error.message ||
+                    "Failed to add inventory."
             );
         }
     };
-
 
     // =========================
     // FILTER INVENTORY
     // =========================
 
-    const filteredInventory =
-        inventory.filter((item) => {
+    const filteredInventory = inventory.filter(
+        (item) => {
+            const medicineName =
+                item.medicineName || "";
 
             const matchesSearch =
-                item.medicineName
-                    ?.toLowerCase()
+                medicineName
+                    .toLowerCase()
                     .includes(
                         search.toLowerCase()
                     );
-
 
             const matchesStock =
                 stockFilter === "" ||
                 item.status === stockFilter;
 
-
             return (
                 matchesSearch &&
                 matchesStock
             );
-        });
-
+        }
+    );
 
     // =========================
     // DASHBOARD COUNTS
     // =========================
 
-    const totalItems =
-        inventory.length;
+    const totalItems = inventory.length;
 
     const availableStock =
         inventory.filter(
-            (item) => item.status === "IN_STOCK"
+            (item) =>
+                item.status === "IN_STOCK"
         ).length;
 
     const lowStock =
         inventory.filter(
-            (item) => item.status === "LOW_STOCK"
+            (item) =>
+                item.status === "LOW_STOCK"
         ).length;
 
     const outOfStock =
         inventory.filter(
-            (item) => item.status === "OUT_OF_STOCK"
+            (item) =>
+                item.status === "OUT_OF_STOCK"
         ).length;
-
 
     // =========================
     // STATUS DISPLAY
     // =========================
 
     const getStatusText = (status) => {
-
         if (status === "IN_STOCK") {
             return "Available";
         }
@@ -363,214 +331,182 @@ const Inventory = () => {
             return "Out of Stock";
         }
 
-        return status;
+        return status || "Unknown";
     };
 
-
     const getStatusClass = (status) => {
-
         if (status === "IN_STOCK") {
-            return "bg-green-100 text-green-700";
+            return "bg-emerald-50 text-emerald-700";
         }
 
         if (status === "LOW_STOCK") {
-            return "bg-amber-100 text-amber-700";
+            return "bg-amber-50 text-amber-700";
         }
 
         if (status === "OUT_OF_STOCK") {
-            return "bg-red-100 text-red-600";
+            return "bg-red-50 text-red-700";
         }
 
-        return "";
+        return "bg-slate-100 text-slate-600";
     };
 
+    // =========================
+    // LOADING
+    // =========================
+
+    if (loading) {
+        return (
+            <div className="flex min-h-[60vh] items-center justify-center bg-slate-50">
+                <div className="text-center">
+                    <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+                    <p className="text-sm text-slate-500">
+                        Loading inventory...
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    // =========================
+    // UI
+    // =========================
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-800 text-left">
+        <div className="min-h-screen bg-slate-50 px-5 py-6 md:px-8">
+            {/* Header */}
 
-            {/* ================= HEADER ================= */}
-
-            <header className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-5 py-5 md:px-8">
-
+            <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-
-                    <h1>MediStock</h1>
-
-                    <p>
-                        Medicine Inventory Management
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+                        MediStock
                     </p>
 
+                    <h1 className="mt-1 text-2xl font-bold text-slate-900">
+                        Inventory Management
+                    </h1>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                        Monitor and manage current medicine stock.
+                    </p>
                 </div>
 
-
-                <div className="flex flex-wrap items-center gap-3 text-sm">
-
-                    <span>
-                        Welcome, {user?.name}
-                    </span>
-
-                    <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-600">
-                        {user?.role}
-                    </span>
-
+                <div className="flex gap-3">
                     <button
+                        type="button"
                         onClick={() =>
                             navigate("/medicines")
                         }
-                        className="rounded-lg border-0 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+                        className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
                     >
-                        Back to Medicines
+                        Medicines
                     </button>
 
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setShowAddForm(
+                                !showAddForm
+                            )
+                        }
+                        className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+                    >
+                        {showAddForm
+                            ? "Close"
+                            : "+ Add Inventory"}
+                    </button>
+                </div>
+            </div>
+
+            {/* Error */}
+
+            {error && (
+                <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                    {error}
+                </div>
+            )}
+
+            {/* Statistics */}
+
+            <div className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <p className="text-sm font-medium text-slate-500">
+                        Total Items
+                    </p>
+
+                    <p className="mt-2 text-2xl font-bold text-slate-900">
+                        {totalItems}
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-400">
+                        Inventory records
+                    </p>
                 </div>
 
-            </header>
+                <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+                    <p className="text-sm font-medium text-slate-500">
+                        Available
+                    </p>
 
+                    <p className="mt-2 text-2xl font-bold text-emerald-600">
+                        {availableStock}
+                    </p>
 
-            {/* ================= MAIN ================= */}
+                    <p className="mt-1 text-xs text-slate-400">
+                        Well stocked
+                    </p>
+                </div>
 
-            <main className="mx-auto w-full max-w-6xl px-5 py-8 md:px-8">
+                <div className="rounded-xl border border-amber-100 bg-white p-5 shadow-sm">
+                    <p className="text-sm font-medium text-slate-500">
+                        Low Stock
+                    </p>
 
-                <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+                    <p className="mt-2 text-2xl font-bold text-amber-600">
+                        {lowStock}
+                    </p>
 
-                    <div>
+                    <p className="mt-1 text-xs text-slate-400">
+                        Need attention
+                    </p>
+                </div>
 
-                        <h2>
-                            Inventory Management
+                <div className="rounded-xl border border-red-100 bg-white p-5 shadow-sm">
+                    <p className="text-sm font-medium text-slate-500">
+                        Out of Stock
+                    </p>
+
+                    <p className="mt-2 text-2xl font-bold text-red-600">
+                        {outOfStock}
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-400">
+                        Currently unavailable
+                    </p>
+                </div>
+            </div>
+
+            {/* Add Inventory */}
+
+            {showAddForm && (
+                <div className="mb-7 rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                    <div className="mb-5">
+                        <h2 className="text-lg font-bold text-slate-900">
+                            Add Inventory
                         </h2>
 
-                        <p>
-                            Monitor and manage medicine stock
+                        <p className="mt-1 text-sm text-slate-500">
+                            Add stock for an existing medicine.
                         </p>
-
                     </div>
-
-
-                    <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-
-                        <button
-                            className="inline-flex items-center justify-center rounded-lg border-0 bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                            onClick={() =>
-                                setShowAddForm(
-                                    !showAddForm
-                                )
-                            }
-                        >
-                            + Add Inventory
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                {/* ================= STATS ================= */}
-
-                <div className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-                    <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xl text-blue-600">
-                            📦
-                        </div>
-
-                        <div>
-
-                            <p>
-                                Total Items
-                            </p>
-
-                            <h3>
-                                {totalItems}
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-
-                    <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xl text-blue-600">
-                            ✅
-                        </div>
-
-                        <div>
-
-                            <p>
-                                Available Stock
-                            </p>
-
-                            <h3>
-                                {availableStock}
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-
-                    <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xl text-blue-600">
-                            ⚠️
-                        </div>
-
-                        <div>
-
-                            <p>
-                                Low Stock
-                            </p>
-
-                            <h3>
-                                {lowStock}
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-
-                    <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xl text-blue-600">
-                            ❌
-                        </div>
-
-                        <div>
-
-                            <p>
-                                Out of Stock
-                            </p>
-
-                            <h3>
-                                {outOfStock}
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                {/* ================= ADD INVENTORY FORM ================= */}
-
-                {showAddForm && (
 
                     <form
-                        className="w-full max-w-3xl rounded-xl bg-white p-5 shadow-md md:p-7"
-                        onSubmit={handleAddInventory}
+                        onSubmit={
+                            handleAddInventory
+                        }
+                        className="grid grid-cols-1 gap-5 md:grid-cols-3"
                     >
-
-                        <h3>
-                            Add Inventory
-                        </h3>
-
-
-                        <div className="mb-5 flex flex-col [&_label]:mb-2 [&_label]:text-sm [&_label]:font-semibold [&_label]:text-slate-800 [&_input]:w-full [&_input]:box-border [&_input]:rounded-lg [&_input]:border [&_input]:border-slate-300 [&_input]:bg-white [&_input]:px-3.5 [&_input]:py-3 [&_input]:text-sm [&_input]:text-slate-800 [&_input]:outline-none [&_input]:focus:border-blue-600 [&_input]:focus:ring-2 [&_input]:focus:ring-blue-100 [&_select]:w-full [&_select]:box-border [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-300 [&_select]:bg-white [&_select]:px-3.5 [&_select]:py-3 [&_select]:text-sm [&_select]:text-slate-800 [&_select]:outline-none [&_select]:focus:border-blue-600 [&_select]:focus:ring-2 [&_select]:focus:ring-blue-100 [&_textarea]:w-full [&_textarea]:box-border [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-slate-300 [&_textarea]:bg-white [&_textarea]:px-3.5 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:text-slate-800 [&_textarea]:outline-none [&_textarea]:focus:border-blue-600 [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-blue-100">
-
-                            <label>
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">
                                 Medicine
                             </label>
 
@@ -579,22 +515,23 @@ const Inventory = () => {
                                     newInventory.medicineId
                                 }
                                 onChange={(e) =>
-                                    setNewInventory({
-                                        ...newInventory,
-                                        medicineId:
-                                        e.target.value
-                                    })
+                                    setNewInventory(
+                                        (current) => ({
+                                            ...current,
+                                            medicineId:
+                                                e.target
+                                                    .value,
+                                        })
+                                    )
                                 }
-                                required
+                                className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                             >
-
                                 <option value="">
                                     Select medicine
                                 </option>
 
                                 {medicines.map(
                                     (medicine) => (
-
                                         <option
                                             key={
                                                 medicine.id
@@ -603,20 +540,17 @@ const Inventory = () => {
                                                 medicine.id
                                             }
                                         >
-                                            {medicine.name}
+                                            {
+                                                medicine.name
+                                            }
                                         </option>
-
                                     )
                                 )}
-
                             </select>
-
                         </div>
 
-
-                        <div className="mb-5 flex flex-col [&_label]:mb-2 [&_label]:text-sm [&_label]:font-semibold [&_label]:text-slate-800 [&_input]:w-full [&_input]:box-border [&_input]:rounded-lg [&_input]:border [&_input]:border-slate-300 [&_input]:bg-white [&_input]:px-3.5 [&_input]:py-3 [&_input]:text-sm [&_input]:text-slate-800 [&_input]:outline-none [&_input]:focus:border-blue-600 [&_input]:focus:ring-2 [&_input]:focus:ring-blue-100 [&_select]:w-full [&_select]:box-border [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-300 [&_select]:bg-white [&_select]:px-3.5 [&_select]:py-3 [&_select]:text-sm [&_select]:text-slate-800 [&_select]:outline-none [&_select]:focus:border-blue-600 [&_select]:focus:ring-2 [&_select]:focus:ring-blue-100 [&_textarea]:w-full [&_textarea]:box-border [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-slate-300 [&_textarea]:bg-white [&_textarea]:px-3.5 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:text-slate-800 [&_textarea]:outline-none [&_textarea]:focus:border-blue-600 [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-blue-100">
-
-                            <label>
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">
                                 Quantity
                             </label>
 
@@ -627,229 +561,179 @@ const Inventory = () => {
                                     newInventory.quantity
                                 }
                                 onChange={(e) =>
-                                    setNewInventory({
-                                        ...newInventory,
-                                        quantity:
-                                        e.target.value
-                                    })
+                                    setNewInventory(
+                                        (current) => ({
+                                            ...current,
+                                            quantity:
+                                                e.target
+                                                    .value,
+                                        })
+                                    )
                                 }
-                                required
+                                placeholder="Enter quantity"
+                                className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                             />
-
                         </div>
 
-
-                        <div className="mt-2 flex flex-col justify-end gap-3 sm:flex-row">
-
-                            <button
-                                type="button"
-                                className="rounded-lg border-0 bg-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-300"
-                                onClick={() =>
-                                    setShowAddForm(false)
-                                }
-                            >
-                                Cancel
-                            </button>
-
-
+                        <div className="flex items-end">
                             <button
                                 type="submit"
-                                className="inline-flex items-center justify-center rounded-lg border-0 bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
                             >
-                                Add Inventory
+                                Add Stock
                             </button>
-
                         </div>
-
                     </form>
+                </div>
+            )}
 
-                )}
+            {/* Search / Filter */}
 
+            <div className="mb-5 flex flex-col gap-3 md:flex-row">
+                <input
+                    type="text"
+                    placeholder="🔍 Search medicine..."
+                    value={search}
+                    onChange={(e) =>
+                        setSearch(e.target.value)
+                    }
+                    className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 md:flex-1"
+                />
 
-                {/* ================= SEARCH & FILTER ================= */}
+                <select
+                    value={stockFilter}
+                    onChange={(e) =>
+                        setStockFilter(
+                            e.target.value
+                        )
+                    }
+                    className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                >
+                    <option value="">
+                        All Stock
+                    </option>
 
-                <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                    <option value="IN_STOCK">
+                        Available
+                    </option>
 
-                    <div className="mb-4 [&_h2]:m-0 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900 [&_p]:mt-1 [&_p]:text-sm [&_p]:text-slate-500">
+                    <option value="LOW_STOCK">
+                        Low Stock
+                    </option>
 
-                        <div>
+                    <option value="OUT_OF_STOCK">
+                        Out of Stock
+                    </option>
+                </select>
+            </div>
 
-                            <h2>
-                                Inventory Stock
-                            </h2>
+            {/* Inventory Table */}
 
-                            <p>
-                                View and update current stock
-                            </p>
+            <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-100 px-5 py-4 md:px-6">
+                    <h2 className="text-lg font-bold text-slate-900">
+                        Current Inventory
+                    </h2>
 
-                        </div>
+                    <p className="mt-1 text-sm text-slate-500">
+                        {filteredInventory.length} inventory records
+                    </p>
+                </div>
 
-                    </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[900px] border-collapse">
+                        <thead className="bg-slate-50">
+                            <tr>
+                                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Medicine
+                                </th>
 
+                                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Quantity
+                                </th>
 
-                    <div className="my-5 flex flex-col gap-3 md:flex-row">
+                                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Reorder Level
+                                </th>
 
-                        <input
-                            type="text"
-                            placeholder="🔍 Search medicine..."
-                            className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-                            value={search}
-                            onChange={(e) =>
-                                setSearch(e.target.value)
-                            }
-                        />
+                                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Status
+                                </th>
 
+                                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Update Stock
+                                </th>
+                            </tr>
+                        </thead>
 
-                        <select
-                            className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-                            value={stockFilter}
-                            onChange={(e) =>
-                                setStockFilter(
-                                    e.target.value
-                                )
-                            }
-                        >
-
-                            <option value="">
-                                All Stock
-                            </option>
-
-                            <option value="IN_STOCK">
-                                Available
-                            </option>
-
-                            <option value="LOW_STOCK">
-                                Low Stock
-                            </option>
-
-                            <option value="OUT_OF_STOCK">
-                                Out of Stock
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    {/* ================= TABLE ================= */}
-
-                    <div className="overflow-x-auto">
-
-                        {loading ? (
-
-                            <p>
-                                Loading inventory...
-                            </p>
-
-                        ) : error ? (
-
-                            <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                                {error}
-                            </p>
-
-                        ) : (
-
-                            <table className="w-full border-collapse text-left text-sm [&_th]:border-b [&_th]:border-slate-200 [&_th]:bg-slate-50 [&_th]:px-3 [&_th]:py-3 [&_th]:font-semibold [&_th]:text-slate-500 [&_td]:border-b [&_td]:border-slate-100 [&_td]:px-3 [&_td]:py-4">
-
-                                <thead>
-
+                        <tbody className="divide-y divide-slate-100">
+                            {filteredInventory.length ===
+                            0 ? (
                                 <tr>
-
-                                    <th>
-                                        Medicine
-                                    </th>
-
-                                    <th>
-                                        Quantity
-                                    </th>
-
-                                    <th>
-                                        Reorder Level
-                                    </th>
-
-                                    <th>
-                                        Status
-                                    </th>
-
-                                    <th>
-                                        Stock Action
-                                    </th>
-
-                                </tr>
-
-                                </thead>
-
-
-                                <tbody>
-
-                                {filteredInventory.length === 0 ? (
-
-                                    <tr>
-
-                                        <td
-                                            colSpan="5"
-                                            className="!p-10 text-center text-slate-400"
-                                        >
+                                    <td
+                                        colSpan="5"
+                                        className="px-5 py-12 text-center"
+                                    >
+                                        <p className="text-sm font-medium text-slate-500">
                                             No inventory found
-                                        </td>
+                                        </p>
 
-                                    </tr>
+                                        <p className="mt-1 text-xs text-slate-400">
+                                            Try changing your search or filter.
+                                        </p>
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredInventory.map(
+                                    (item) => (
+                                        <tr
+                                            key={item.id}
+                                            className="transition hover:bg-slate-50"
+                                        >
+                                            <td className="px-5 py-4">
+                                                <p className="text-sm font-semibold text-slate-800">
+                                                    {
+                                                        item.medicineName
+                                                    }
+                                                </p>
+                                            </td>
 
-                                ) : (
-
-                                    filteredInventory.map(
-                                        (item) => (
-
-                                            <tr
-                                                key={
-                                                    item.id
-                                                }
-                                            >
-
-                                                <td>
-
-                                                    <strong>
-                                                        {
-                                                            item.medicineName
-                                                        }
-                                                    </strong>
-
-                                                </td>
-
-
-                                                <td>
+                                            <td className="px-5 py-4">
+                                                <span className="text-sm font-semibold text-slate-800">
                                                     {
                                                         item.quantity
                                                     }
-                                                </td>
+                                                </span>
+                                            </td>
 
+                                            <td className="px-5 py-4 text-sm text-slate-600">
+                                                {item.reorderLevel ??
+                                                    item.reorderLevelQuantity ??
+                                                    "-"}
+                                            </td>
 
-                                                <td>
-                                                    {
-                                                        item.reorderLevel
-                                                    }
-                                                </td>
+                                            <td className="px-5 py-4">
+                                                <span
+                                                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(
+                                                        item.status
+                                                    )}`}
+                                                >
+                                                    {getStatusText(
+                                                        item.status
+                                                    )}
+                                                </span>
+                                            </td>
 
-
-                                                <td>
-
-                                                        <span
-                                                            className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusClass(
-                                                                item.status
-                                                            )}`}
-                                                        >
-                                                            {getStatusText(
-                                                                item.status
-                                                            )}
-                                                        </span>
-
-                                                </td>
-
-
-                                                <td>
-
+                                            <td className="px-5 py-4">
+                                                <div className="flex items-center gap-2">
                                                     <button
-                                                        className="mr-1.5 rounded-md border-0 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 transition hover:bg-blue-100"
+                                                        type="button"
+                                                        disabled={
+                                                            Number(
+                                                                item.quantity
+                                                            ) <=
+                                                            0
+                                                        }
                                                         onClick={() =>
                                                             updateStock(
                                                                 item.id,
@@ -857,30 +741,19 @@ const Inventory = () => {
                                                                 -1
                                                             )
                                                         }
-                                                        disabled={
-                                                            item.quantity ===
-                                                            0
-                                                        }
+                                                        className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-lg font-bold text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
                                                     >
                                                         −
                                                     </button>
 
-
-                                                    <span
-                                                        style={{
-                                                            margin: "0 12px",
-                                                            fontWeight:
-                                                                "600"
-                                                        }}
-                                                    >
-                                                            {
-                                                                item.quantity
-                                                            }
-                                                        </span>
-
+                                                    <span className="min-w-8 text-center text-sm font-semibold text-slate-700">
+                                                        {
+                                                            item.quantity
+                                                        }
+                                                    </span>
 
                                                     <button
-                                                        className="mr-1.5 rounded-md border-0 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 transition hover:bg-blue-100"
+                                                        type="button"
                                                         onClick={() =>
                                                             updateStock(
                                                                 item.id,
@@ -888,31 +761,25 @@ const Inventory = () => {
                                                                 1
                                                             )
                                                         }
+                                                        className="grid h-8 w-8 place-items-center rounded-lg bg-blue-600 text-lg font-bold text-white transition hover:bg-blue-700"
                                                     >
                                                         +
                                                     </button>
-
-                                                </td>
-
-                                            </tr>
-
-                                        )
+                                                </div>
+                                            </td>
+                                        </tr>
                                     )
+                                )
+                            )}
+                        </tbody>
+                    </table>
+                </div>
 
-                                )}
-
-                                </tbody>
-
-                            </table>
-
-                        )}
-
-                    </div>
-
-                </section>
-
-            </main>
-
+                <div className="border-t border-slate-100 px-5 py-3 text-xs text-slate-400 md:px-6">
+                    Showing {filteredInventory.length} of{" "}
+                    {inventory.length} inventory records
+                </div>
+            </section>
         </div>
     );
 };
