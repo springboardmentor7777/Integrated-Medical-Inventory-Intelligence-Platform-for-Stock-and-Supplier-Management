@@ -1483,12 +1483,5 @@ export const DashboardService = {
   }
 };
 
-// Team Two direct API client modules exports for backwards compatibility
-export { default as apiClient } from '../api/apiClient';
-export { default as authApi } from '../api/authApi';
-export { default as medicineApi } from '../api/medicineApi';
-export { default as supplierApi } from '../api/supplierApi';
-export { default as inventoryApi } from '../api/inventoryApi';
-export { default as expiryApi } from '../api/expiryApi';
-
+// Export default axios api instance
 export default api;
