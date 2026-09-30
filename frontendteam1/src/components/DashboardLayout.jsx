@@ -1,50 +1,168 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import "../styles/DashboardLayout.css";
 
-const navItems = [
-  { to: '/dashboard', label: 'Overview' },
-  { to: '/medicines', label: 'Medicines' },
-  { to: '/suppliers', label: 'Suppliers' },
-  { to: '/inventory', label: 'Inventory' },
-]
+function DashboardLayout() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-export default function DashboardLayout({ children, userLabel = 'Signed in' }) {
+  const menuItems = [
+    {
+      name: "Dashboard",
+      icon: "🏠",
+      path: "/dashboard",
+    },
+    {
+      name: "Analytics",
+      icon: "📊",
+      path: "/analytics",
+    },
+    {
+      name: "Inventory Intelligence",
+      icon: "🧠",
+      path: "/inventory-intelligence",
+    },
+    {
+      name: "Medicines",
+      icon: "💊",
+      path: "/medicines",
+    },
+    {
+      name: "Inventory",
+      icon: "📦",
+      path: "/inventory",
+    },
+    {
+      name: "Suppliers",
+      icon: "🚚",
+      path: "/suppliers",
+    },
+    {
+      name: "Medicine Search",
+      icon: "🔍",
+      path: "/medicine-search",
+    },
+  ];
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
-        <div className="flex items-center gap-2 border-b border-slate-200 px-5 py-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-sm font-bold text-white">
-            M
+      <div className="dashboard-layout-page">
+
+        {/* Background decorations */}
+        <div className="layout-orb layout-orb-one"></div>
+        <div className="layout-orb layout-orb-two"></div>
+        <div className="layout-orb layout-orb-three"></div>
+
+        {/* ================= NAVBAR ================= */}
+        <nav className="layout-navbar">
+
+          <div className="layout-brand">
+            <div className="layout-logo">Ⓜ</div>
+            <span>MediStock</span>
           </div>
-          <span className="text-base font-bold text-slate-900">MedStock</span>
+
+          <div className="layout-navbar-right">
+
+            <div className="layout-user">
+
+              <div className="layout-avatar">
+                {user?.name
+                    ? user.name.charAt(0).toUpperCase()
+                    : "U"}
+              </div>
+
+              <div className="layout-user-text">
+                <strong>
+                  {user?.name || "User"}
+                </strong>
+
+                <span>
+                                {user?.role || "Staff"}
+                            </span>
+              </div>
+
+            </div>
+
+            <button
+                className="layout-logout"
+                onClick={handleLogout}
+            >
+              <span>↪</span>
+              Logout
+            </button>
+
+          </div>
+
+        </nav>
+
+        {/* ================= BODY ================= */}
+        <div className="layout-body">
+
+          {/* ================= SIDEBAR ================= */}
+          <aside className="layout-sidebar">
+
+            <div className="layout-sidebar-header">
+              <p>MEDISTOCK</p>
+              <h2>Modules</h2>
+            </div>
+
+            <nav className="layout-menu">
+
+              {menuItems.map((item) => (
+                  <NavLink
+                      key={item.path}
+                      to={item.path}
+                      className={({ isActive }) =>
+                          isActive
+                              ? "layout-menu-item active"
+                              : "layout-menu-item"
+                      }
+                  >
+                                <span className="layout-menu-icon">
+                                    {item.icon}
+                                </span>
+
+                    <span className="layout-menu-text">
+                                    {item.name}
+                                </span>
+
+                    <span className="layout-menu-arrow">
+                                    →
+                                </span>
+                  </NavLink>
+              ))}
+
+            </nav>
+
+            {/* ================= STATUS ================= */}
+            <div className="layout-sidebar-status">
+
+              <span className="layout-status-dot"></span>
+
+              <div>
+                <strong>System Online</strong>
+                <span>
+                                Inventory services active
+                            </span>
+              </div>
+
+            </div>
+
+          </aside>
+
+          {/* ================= PAGE CONTENT ================= */}
+          <main className="layout-main-content">
+            <Outlet />
+          </main>
+
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
-                }`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
-
-      <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Pharmacy inventory console</p>
-          <span className="text-sm text-slate-600">{userLabel}</span>
-        </header>
-
-        <main className="flex-1 px-6 py-6">{children}</main>
       </div>
-    </div>
-  )
+  );
 }
+
+export default DashboardLayout;

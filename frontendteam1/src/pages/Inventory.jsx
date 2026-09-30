@@ -18,19 +18,30 @@ function Inventory() {
     const [stockLogs, setStockLogs] = useState({});
 
     useEffect(() => {
-        loadInventory();
-    }, []);
+        if (token) {
+            loadInventory();
+        }
+    }, [token]);
+
+    /* =====================================================
+       LOAD DATA
+       ===================================================== */
 
     async function loadInventory() {
         try {
-            const data = await getInventory(token);
-            setInventory(data);
+            setError("");
 
-            for (const item of data) {
-                if (item.medicine?.id) {
-                    await loadStockLogs(item.medicine.id);
-                }
-            }
+            const data = await getInventory(token);
+            const list = Array.isArray(data) ? data : [];
+
+            setInventory(list);
+
+            // Load all stock histories in parallel, without blocking the page
+            Promise.all(
+                list
+                    .filter((item) => item.medicine?.id)
+                    .map((item) => loadStockLogs(item.medicine.id))
+            );
         } catch (error) {
             console.error("Failed to load inventory:", error);
             setError("Failed to load inventory. Please try again.");
@@ -55,6 +66,32 @@ function Inventory() {
         }
     }
 
+    /* =====================================================
+       INSTANT UI UPDATE
+       Uses the quantity returned by the API.
+       Returns true if the screen was updated.
+       ===================================================== */
+
+    function applyUpdatedStock(medicineId, newQuantity) {
+        if (typeof newQuantity !== "number" || Number.isNaN(newQuantity)) {
+            return false;
+        }
+
+        setInventory((prev) =>
+            prev.map((item) =>
+                item.medicine?.id === medicineId
+                    ? { ...item, quantity: newQuantity }
+                    : item
+            )
+        );
+
+        return true;
+    }
+
+    /* =====================================================
+       ACTIONS
+       ===================================================== */
+
     async function handleAddStock(medicineId) {
         const quantity = stockQuantity[medicineId];
 
@@ -64,10 +101,15 @@ function Inventory() {
         }
 
         try {
-            await addStock(
+            const updated = await addStock(
                 medicineId,
                 Number(quantity),
                 token
+            );
+
+            const applied = applyUpdatedStock(
+                medicineId,
+                updated?.quantity
             );
 
             setStockQuantity((prev) => ({
@@ -75,9 +117,13 @@ function Inventory() {
                 [medicineId]: "",
             }));
 
-            await loadInventory();
-
-            alert("Stock added successfully.");
+            if (applied) {
+                // refresh only this medicine's history
+                loadStockLogs(medicineId);
+            } else {
+                // response had no quantity: fall back to a full reload
+                await loadInventory();
+            }
         } catch (error) {
             console.error("Failed to add stock:", error);
             alert("Could not add stock.");
@@ -97,25 +143,36 @@ function Inventory() {
         }
 
         try {
-            await updateStock(
+            const updated = await updateStock(
                 medicineId,
                 Number(quantity),
                 token
             );
+
+            // Update Stock sets the exact quantity, so the entered value
+            // is a safe fallback if the response has no quantity field.
+            const newQuantity =
+                typeof updated?.quantity === "number"
+                    ? updated.quantity
+                    : Number(quantity);
+
+            applyUpdatedStock(medicineId, newQuantity);
 
             setStockQuantity((prev) => ({
                 ...prev,
                 [medicineId]: "",
             }));
 
-            await loadInventory();
-
-            alert("Stock updated successfully.");
+            loadStockLogs(medicineId);
         } catch (error) {
             console.error("Failed to update stock:", error);
             alert("Could not update stock.");
         }
     }
+
+    /* =====================================================
+       HELPERS
+       ===================================================== */
 
     function formatDate(dateString) {
         if (!dateString) {
@@ -145,6 +202,10 @@ function Inventory() {
             text: "In Stock",
         };
     }
+
+    /* =====================================================
+       LOADING STATE
+       ===================================================== */
 
     if (loading) {
         return (
@@ -177,6 +238,10 @@ function Inventory() {
             </div>
         );
     }
+
+    /* =====================================================
+       ERROR STATE
+       ===================================================== */
 
     if (error) {
         return (
@@ -214,7 +279,10 @@ function Inventory() {
 
                     <button
                         className="retry-button"
-                        onClick={loadInventory}
+                        onClick={() => {
+                            setLoading(true);
+                            loadInventory();
+                        }}
                     >
                         Try Again
                     </button>
@@ -224,6 +292,10 @@ function Inventory() {
             </div>
         );
     }
+
+    /* =====================================================
+       MAIN VIEW
+       ===================================================== */
 
     return (
         <div className="inventory-page">
@@ -301,7 +373,7 @@ function Inventory() {
                             "Unknown Medicine";
 
                         const quantity =
-                            item.quantity ?? 0;
+                            Number(item.quantity ?? 0);
 
                         const stockStatus =
                             getStockStatus(quantity);
@@ -420,11 +492,10 @@ function Inventory() {
 
                                                     <div
                                                         className={`history-action ${
-    log.actionType ===
-    "REDUCE"
-        ? "reduce"
-        : "add"
-}`}
+                                                            log.actionType === "REDUCE"
+                                                                ? "reduce"
+                                                                : "add"
+                                                        }`}
                                                     >
                                                         {log.actionType}
                                                     </div>
@@ -468,27 +539,28 @@ function Inventory() {
 
                                 <div className="stock-update-section">
 
-                                    <label>
+                                    <label htmlFor={`stock-input-${medicineId}`}>
                                         Update Stock Quantity
                                     </label>
 
                                     <div className="stock-controls">
 
                                         <input
+                                            id={`stock-input-${medicineId}`}
                                             type="number"
                                             min="0"
                                             placeholder="Enter quantity"
                                             value={
                                                 stockQuantity[
                                                     medicineId
-                                                ] || ""
+                                                    ] || ""
                                             }
                                             onChange={(e) =>
                                                 setStockQuantity(
                                                     (prev) => ({
                                                         ...prev,
                                                         [medicineId]:
-                                                            e.target.value,
+                                                        e.target.value,
                                                     })
                                                 )
                                             }
@@ -540,4 +612,3 @@ function Inventory() {
 }
 
 export default Inventory;
-

@@ -1,0 +1,452 @@
+/* =========================================================
+   MEDISTOCK — MEDICINE FORM MODAL
+   ========================================================= */
+
+.medicine-form-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background: rgba(38, 25, 47, 0.48);
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    overflow-y: auto;
+}
+
+/* =========================================================
+   FORM PANEL
+   ========================================================= */
+
+.medicine-form-panel {
+    width: min(720px, 100%);
+
+    max-height: calc(100vh - 48px);
+
+    overflow-y: auto;
+
+    background: #ffffff;
+
+    border: 1px solid #eadfed;
+
+    border-radius: 22px;
+
+    box-shadow:
+            0 30px 80px rgba(48, 31, 58, 0.28),
+            0 8px 25px rgba(48, 31, 58, 0.12);
+
+    animation: medicineFormAppear 0.22s ease-out;
+}
+
+@keyframes medicineFormAppear {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.medicine-form-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 27px 30px 23px;
+
+    border-bottom: 1px solid #eee7f1;
+
+    background:
+            radial-gradient(
+                    circle at 90% 0%,
+                    rgba(139, 76, 171, 0.10),
+                    transparent 34%
+            ),
+            #ffffff;
+}
+
+.medicine-form-eyebrow {
+    display: inline-block;
+
+    margin-bottom: 8px;
+
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    background: #f4eaf8;
+
+    color: #794293;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 1.2px;
+}
+
+.medicine-form-header h2 {
+    margin: 0;
+
+    color: #302338;
+
+    font-size: 25px;
+    font-weight: 800;
+
+    line-height: 1.2;
+}
+
+.medicine-form-header p {
+    margin: 7px 0 0;
+
+    color: #837589;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
+
+.medicine-form-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    border: 1px solid #e4d9e8;
+
+    border-radius: 10px;
+
+    background: #faf8fb;
+
+    color: #695873;
+
+    font-size: 25px;
+    font-weight: 400;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.medicine-form-close:hover {
+    background: #f2e8f6;
+
+    border-color: #ccb5d5;
+
+    color: #703b89;
+
+    transform: rotate(90deg);
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.medicine-form-panel form {
+    padding: 25px 30px 29px;
+}
+
+/* =========================================================
+   FIELD
+   ========================================================= */
+
+.medicine-field {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+
+    margin-bottom: 18px;
+}
+
+.medicine-field-full {
+    width: 100%;
+}
+
+.medicine-field-row {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 18px;
+}
+
+.medicine-field label {
+    margin-bottom: 7px;
+
+    color: #45364d;
+
+    font-size: 12px;
+    font-weight: 750;
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.medicine-field input,
+.medicine-field select {
+    width: 100%;
+    height: 45px;
+
+    padding: 0 13px;
+
+    border: 1px solid #ddd2e3;
+
+    border-radius: 10px;
+
+    outline: none;
+
+    background: #ffffff;
+
+    color: #35273c;
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease,
+            background 0.2s ease;
+}
+
+.medicine-field input::placeholder {
+    color: #aaa0af;
+}
+
+.medicine-field input:hover,
+.medicine-field select:hover {
+    border-color: #c7b3cf;
+}
+
+.medicine-field input:focus,
+.medicine-field select:focus {
+    border-color: #9854b5;
+
+    box-shadow:
+            0 0 0 3px rgba(152, 84, 181, 0.12);
+
+    background: #ffffff;
+}
+
+.medicine-field input:disabled,
+.medicine-field select:disabled {
+    background: #f7f5f8;
+
+    color: #99919c;
+
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   SELECT
+   ========================================================= */
+
+.medicine-field select {
+    cursor: pointer;
+
+    appearance: auto;
+}
+
+/* =========================================================
+   PRICE
+   ========================================================= */
+
+.medicine-price-wrapper {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+}
+
+.medicine-price-wrapper > span {
+    position: absolute;
+
+    left: 13px;
+
+    z-index: 1;
+
+    color: #765d80;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    pointer-events: none;
+}
+
+.medicine-price-wrapper input {
+    padding-left: 29px;
+}
+
+/* =========================================================
+   VALIDATION ERROR
+   ========================================================= */
+
+.medicine-field-error {
+    margin: 6px 0 0;
+
+    color: #b23f4d;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    line-height: 1.35;
+}
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.medicine-form-actions {
+    display: flex;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 11px;
+
+    margin-top: 7px;
+
+    padding-top: 21px;
+
+    border-top: 1px solid #eee7f1;
+}
+
+/* Make existing Button component fit nicely */
+.medicine-form-actions button {
+    min-width: 120px;
+
+    min-height: 42px;
+
+    border-radius: 10px;
+
+    font-family: inherit;
+
+    font-size: 12px;
+    font-weight: 750;
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.medicine-form-panel::-webkit-scrollbar {
+    width: 7px;
+}
+
+.medicine-form-panel::-webkit-scrollbar-track {
+    background: #faf8fb;
+}
+
+.medicine-form-panel::-webkit-scrollbar-thumb {
+    background: #d7c8dc;
+
+    border-radius: 20px;
+}
+
+.medicine-form-panel::-webkit-scrollbar-thumb:hover {
+    background: #bda7c5;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .medicine-form-overlay {
+        align-items: flex-start;
+
+        padding: 15px;
+    }
+
+    .medicine-form-panel {
+        max-height: calc(100vh - 30px);
+
+        border-radius: 18px;
+    }
+
+    .medicine-form-header {
+        padding: 22px 20px 19px;
+    }
+
+    .medicine-form-header h2 {
+        font-size: 21px;
+    }
+
+    .medicine-form-header p {
+        font-size: 12px;
+    }
+
+    .medicine-form-panel form {
+        padding: 21px 20px 23px;
+    }
+
+    .medicine-field-row {
+        grid-template-columns: 1fr;
+
+        gap: 0;
+    }
+
+    .medicine-form-actions {
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+    }
+
+    .medicine-form-actions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+
+    .medicine-form-overlay {
+        padding: 10px;
+    }
+
+    .medicine-form-panel {
+        max-height: calc(100vh - 20px);
+    }
+
+    .medicine-form-header {
+        padding: 19px 16px 17px;
+    }
+
+    .medicine-form-panel form {
+        padding: 19px 16px 21px;
+    }
+
+    .medicine-form-close {
+        width: 34px;
+        height: 34px;
+
+        font-size: 22px;
+    }
+}
