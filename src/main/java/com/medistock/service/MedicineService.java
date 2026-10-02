@@ -80,8 +80,18 @@ public class MedicineService {
         medicine.setBatchNumber(request.getBatchNumber());
         medicine.setCategory(request.getCategory());
         medicine.setQuantity(request.getQuantity());
+
+        if (request.getManufacturingDate() != null
+                && request.getExpiryDate() != null
+                && request.getExpiryDate().isBefore(request.getManufacturingDate())) {
+
+            throw new RuntimeException(
+                    "Expiry date cannot be before manufacturing date");
+        }
+
         medicine.setManufacturingDate(request.getManufacturingDate());
         medicine.setExpiryDate(request.getExpiryDate());
+
         medicine.setPrice(request.getPrice());
 
         if (request.getSupplierId() != null) {

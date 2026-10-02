@@ -13,7 +13,7 @@ import java.util.Date;
 public class JwtUtil {
 
     private static final String SECRET_KEY =
-            "bXlfc3VwZXJfc2VjcmV0X2tleV9mb3JfbWVkaXN0b2NrX2F1dGhfMjAyNg==";
+            System.getenv("JWT_SECRET");
 
     private static final long EXPIRATION_TIME = 1000 * 60 * 60;
 
