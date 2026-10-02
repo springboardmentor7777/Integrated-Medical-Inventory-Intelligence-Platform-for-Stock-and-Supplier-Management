@@ -1,4 +1,5 @@
-package com.medistock.service;
+
+        package com.medistock.service;
 
 import com.medistock.entity.LowStockAlert;
 import com.medistock.entity.Medicine;
@@ -28,6 +29,17 @@ public class LowStockAlertService {
         Integer threshold = medicine.getLowStockThreshold();
 
         if (currentQuantity <= threshold) {
+
+            // Check whether an ACTIVE alert already exists
+            boolean activeAlertExists = lowStockAlertRepository
+                    .findByMedicine(medicine)
+                    .stream()
+                    .anyMatch(alert -> "ACTIVE".equals(alert.getStatus()));
+
+            // Do not create duplicate alert/notification
+            if (activeAlertExists) {
+                return;
+            }
 
             // Create low-stock alert
             LowStockAlert alert = new LowStockAlert();
