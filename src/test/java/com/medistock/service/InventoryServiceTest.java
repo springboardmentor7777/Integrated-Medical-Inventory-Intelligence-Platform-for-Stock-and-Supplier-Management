@@ -189,6 +189,7 @@ class InventoryServiceTest {
         );
 
         verify(medicineRepository).findById(medicineId);
+
         verifyNoInteractions(
                 inventoryRepository,
                 stockLogService,
@@ -229,11 +230,15 @@ class InventoryServiceTest {
         assertEquals(50, medicine.getQuantity());
 
         verify(medicineRepository).save(medicine);
+
         verify(stockLogService)
                 .createLog(medicineId, "ADD", 30);
 
-        verify(lowStockAlertService).checkLowStock(medicine);
-        verify(inventoryRepository).save(inventory);
+        verify(lowStockAlertService)
+                .checkLowStock(medicine);
+
+        verify(inventoryRepository)
+                .save(inventory);
     }
 
 
@@ -267,8 +272,11 @@ class InventoryServiceTest {
         verify(stockLogService)
                 .createLog(medicineId, "REDUCE", -20);
 
-        verify(lowStockAlertService).checkLowStock(medicine);
-        verify(inventoryRepository).save(inventory);
+        verify(lowStockAlertService)
+                .checkLowStock(medicine);
+
+        verify(inventoryRepository)
+                .save(inventory);
     }
 
 
@@ -302,7 +310,8 @@ class InventoryServiceTest {
         verify(stockLogService)
                 .createLog(medicineId, "REDUCE", -10);
 
-        verify(lowStockAlertService).checkLowStock(medicine);
+        verify(lowStockAlertService)
+                .checkLowStock(medicine);
     }
 
 
@@ -437,7 +446,7 @@ class InventoryServiceTest {
 
 
     @Test
-    void getAllInventory_shouldReturnEmptyListWhenInventoryIsEmpty() {
+    void getAllInventory_shouldReturnEmptyList_whenInventoryIsEmpty() {
 
         when(inventoryRepository.findAll())
                 .thenReturn(Collections.emptyList());
