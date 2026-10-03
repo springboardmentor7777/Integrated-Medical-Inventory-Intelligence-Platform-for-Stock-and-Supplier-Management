@@ -98,13 +98,8 @@ function Dashboard() {
                         </div>
 
                         <div className="navbar-user-text">
-                            <strong>
-                                {user?.name || "User"}
-                            </strong>
-
-                            <span>
-                                {user?.role || "Staff"}
-                            </span>
+                            <strong>{user?.name || "User"}</strong>
+                            <span>{user?.role || "Staff"}</span>
                         </div>
 
                     </div>
@@ -135,10 +130,7 @@ function Dashboard() {
                             </p>
 
                             <h1>
-                                Welcome
-                                {user?.name
-                                    ? `, ${user.name}`
-                                    : ""}! 👋
+                                Welcome{user?.name ? `, ${user.name}` : ""}! 👋
                             </h1>
 
                             <p className="welcome-description">
@@ -152,16 +144,12 @@ function Dashboard() {
 
                                     <div className="user-info-item">
                                         <span>EMAIL</span>
-                                        <strong>
-                                            {user.email}
-                                        </strong>
+                                        <strong>{user.email}</strong>
                                     </div>
 
                                     <div className="user-info-item">
                                         <span>ROLE</span>
-                                        <strong>
-                                            {user.role}
-                                        </strong>
+                                        <strong>{user.role}</strong>
                                     </div>
 
                                 </div>
@@ -171,9 +159,7 @@ function Dashboard() {
 
                         <div className="welcome-medical-icon">
                             <div className="pulse-ring"></div>
-                            <div className="welcome-icon">
-                                🏥
-                            </div>
+                            <div className="welcome-icon">🏥</div>
                         </div>
 
                     </div>
@@ -184,75 +170,39 @@ function Dashboard() {
                 <section className="dashboard-stats">
 
                     <div className="stat-card stat-purple">
-
                         <div className="stat-icon">💊</div>
-
                         <div className="stat-info">
                             <span>Total Medicines</span>
-
-                            <strong>
-                                {loading ? "..." : totalMedicines}
-                            </strong>
+                            <strong>{loading ? "..." : totalMedicines}</strong>
                         </div>
-
-                        <div className="stat-decoration">
-                            +
-                        </div>
-
+                        <div className="stat-decoration">+</div>
                     </div>
 
                     <div className="stat-card stat-blue">
-
                         <div className="stat-icon">📦</div>
-
                         <div className="stat-info">
                             <span>Total Stock</span>
-
-                            <strong>
-                                {loading ? "..." : totalStock}
-                            </strong>
+                            <strong>{loading ? "..." : totalStock}</strong>
                         </div>
-
-                        <div className="stat-decoration">
-                            ↗
-                        </div>
-
+                        <div className="stat-decoration">↗</div>
                     </div>
 
                     <div className="stat-card stat-orange">
-
                         <div className="stat-icon">⚠️</div>
-
                         <div className="stat-info">
                             <span>Low Stock</span>
-
-                            <strong>
-                                {loading ? "..." : lowStock}
-                            </strong>
+                            <strong>{loading ? "..." : lowStock}</strong>
                         </div>
-
-                        <div className="stat-decoration">
-                            !
-                        </div>
-
+                        <div className="stat-decoration">!</div>
                     </div>
 
                     <div className="stat-card stat-green">
-
                         <div className="stat-icon">✓</div>
-
                         <div className="stat-info">
                             <span>Healthy Stock</span>
-
-                            <strong>
-                                {loading ? "..." : healthyStock}
-                            </strong>
+                            <strong>{loading ? "..." : healthyStock}</strong>
                         </div>
-
-                        <div className="stat-decoration">
-                            ✓
-                        </div>
-
+                        <div className="stat-decoration">✓</div>
                     </div>
 
                 </section>
@@ -266,25 +216,14 @@ function Dashboard() {
                         <div className="analytics-header">
 
                             <div>
-
                                 <p className="analytics-label">
                                     INVENTORY ANALYTICS
                                 </p>
-
-                                <h2>
-                                    Top Medicine Stock
-                                </h2>
-
-                                <p>
-                                    Current stock levels from
-                                    your inventory.
-                                </p>
-
+                                <h2>Top Medicine Stock</h2>
+                                <p>Current stock levels from your inventory.</p>
                             </div>
 
-                            <div className="analytics-icon">
-                                📊
-                            </div>
+                            <div className="analytics-icon">📊</div>
 
                         </div>
 
@@ -306,25 +245,11 @@ function Dashboard() {
                             <div className="stock-chart">
 
                                 <div className="chart-y-axis">
-
-                                    <span>
-                                        {maxStock}
-                                    </span>
-
-                                    <span>
-                                        {Math.round(maxStock * 0.75)}
-                                    </span>
-
-                                    <span>
-                                        {Math.round(maxStock * 0.5)}
-                                    </span>
-
-                                    <span>
-                                        {Math.round(maxStock * 0.25)}
-                                    </span>
-
+                                    <span>{maxStock}</span>
+                                    <span>{Math.round(maxStock * 0.75)}</span>
+                                    <span>{Math.round(maxStock * 0.5)}</span>
+                                    <span>{Math.round(maxStock * 0.25)}</span>
                                     <span>0</span>
-
                                 </div>
 
                                 <div className="chart-area">
@@ -339,63 +264,48 @@ function Dashboard() {
 
                                     <div className="bars">
 
-                                        {chartData.map(
-                                            (item, index) => {
+                                        {chartData.map((item, index) => {
 
-                                                const medicineName =
-                                                    item.medicine?.medicineName ||
-                                                    item.medicine?.name ||
-                                                    `Medicine ${index + 1}`;
+                                            const medicineName =
+                                                item.medicine?.medicineName ||
+                                                item.medicine?.name ||
+                                                `Medicine ${index + 1}`;
 
-                                                const quantity =
-                                                    item.quantity || 0;
+                                            const quantity = item.quantity || 0;
 
-                                                const height =
-                                                    (quantity / maxStock) *
-                                                    100;
+                                            const height = (quantity / maxStock) * 100;
 
-                                                return (
-                                                    <div
-                                                        className="bar-column"
-                                                        key={
-                                                            item.id ||
-                                                            index
-                                                        }
-                                                    >
+                                            return (
+                                                <div
+                                                    className="bar-column"
+                                                    key={item.id || index}
+                                                >
 
-                                                        <div className="bar-value">
-                                                            {quantity}
-                                                        </div>
-
-                                                        <div className="bar-wrapper">
-
-                                                            <div
-                                                                className="stock-bar"
-                                                                style={{
-                                                                    height: `${height}%`,
-                                                                    animationDelay:
-                                                                        `${index * 0.12}s`,
-                                                                }}
-                                                            >
-                                                                <div className="bar-glow"></div>
-                                                            </div>
-
-                                                        </div>
-
-                                                        <span className="bar-label">
-                                                            {medicineName.length >
-                                                            12
-                                                                ? `${medicineName.substring(
-                                                                    0,
-                                                                    12
-                                                                )}...`
-                                                                : medicineName}
-                                                        </span>
-
+                                                    <div className="bar-value">
+                                                        {quantity}
                                                     </div>
-                                                );
-                                            }
-                                        )}
+
+                                                    <div className="bar-wrapper">
+                                                        <div
+                                                            className="stock-bar"
+                                                            style={{
+                                                                height: `${height}%`,
+                                                                animationDelay: `${index * 0.12}s`,
+                                                            }}
+                                                        >
+                                                            <div className="bar-glow"></div>
+                                                        </div>
+                                                    </div>
+
+                                                    <span className="bar-label">
+                                                        {medicineName.length > 12
+                                                            ? `${medicineName.substring(0, 12)}...`
+                                                            : medicineName}
+                                                    </span>
+
+                                                </div>
+                                            );
+                                        })}
 
                                     </div>
 
@@ -413,96 +323,50 @@ function Dashboard() {
                         <div className="analytics-header">
 
                             <div>
-
-                                <p className="analytics-label">
-                                    STOCK STATUS
-                                </p>
-
-                                <h2>
-                                    Inventory Health
-                                </h2>
-
-                                <p>
-                                    Current stock condition
-                                    overview.
-                                </p>
-
+                                <p className="analytics-label">STOCK STATUS</p>
+                                <h2>Inventory Health</h2>
+                                <p>Current stock condition overview.</p>
                             </div>
 
-                            <div className="analytics-icon">
-                                ❤️
-                            </div>
+                            <div className="analytics-icon">❤️</div>
 
                         </div>
 
                         <div className="health-content">
 
                             <div className="health-circle">
-
                                 <div className="health-circle-inner">
-
                                     <strong>
-                                        {loading
-                                            ? "..."
-                                            : totalMedicines}
+                                        {loading ? "..." : totalMedicines}
                                     </strong>
-
-                                    <span>
-                                        Medicines
-                                    </span>
-
+                                    <span>Medicines</span>
                                 </div>
-
                             </div>
 
                             <div className="health-list">
 
                                 <div className="health-item">
-
                                     <span className="health-dot healthy-dot"></span>
-
                                     <div>
-                                        <strong>
-                                            {healthyStock}
-                                        </strong>
-
-                                        <span>
-                                            Healthy Stock
-                                        </span>
+                                        <strong>{healthyStock}</strong>
+                                        <span>Healthy Stock</span>
                                     </div>
-
                                 </div>
 
                                 <div className="health-item">
-
                                     <span className="health-dot low-dot"></span>
-
                                     <div>
-                                        <strong>
-                                            {lowStock}
-                                        </strong>
-
-                                        <span>
-                                            Low Stock
-                                        </span>
+                                        <strong>{lowStock}</strong>
+                                        <span>Low Stock</span>
                                     </div>
-
                                 </div>
 
                                 <div className="health-item">
-
                                     <span className="health-dot out-dot"></span>
-
                                     <div>
-                                        <strong>
-                                            {outOfStock}
-                                        </strong>
-
-                                        <span>
-                                            Out of Stock
-                                        </span>
+                                        <strong>{outOfStock}</strong>
+                                        <span>Out of Stock</span>
                                     </div>
-
                                 </div>
 
                             </div>
@@ -511,274 +375,11 @@ function Dashboard() {
 
                         <button
                             className="analytics-action"
-                            onClick={() =>
-                                navigate("/inventory")
-                            }
+                            onClick={() => navigate("/inventory")}
                         >
                             View Full Inventory
                             <span>→</span>
                         </button>
-
-                    </div>
-
-                </section>
-
-                {/* Quick Access */}
-                <div className="section-heading">
-
-                    <div>
-
-                        <p className="section-label">
-                            MANAGEMENT
-                        </p>
-
-                        <h2 className="section-title">
-                            Quick Access
-                        </h2>
-
-                    </div>
-
-                    <span className="section-line"></span>
-
-                </div>
-
-                <section className="dashboard-cards">
-
-                    <div
-                        className="dashboard-card clickable-card"
-                        onClick={() =>
-                            navigate("/medicines")
-                        }
-                    >
-
-                        <div className="card-top">
-
-                            <div className="card-icon">
-                                💊
-                            </div>
-
-                            <span className="card-arrow">
-                                ↗
-                            </span>
-
-                        </div>
-
-                        <h3>
-                            Medicines
-                        </h3>
-
-                        <p>
-                            Manage and view medicine
-                            records, details and
-                            availability.
-                        </p>
-
-                        <div className="card-bottom">
-                            <span>
-                                Open Medicines
-                            </span>
-
-                            <span>→</span>
-                        </div>
-
-                    </div>
-                                        <div
-                        className="dashboard-card clickable-card"
-                        onClick={() =>
-                            navigate("/analytics")
-                        }
-                    >
-
-                        <div className="card-top">
-
-                            <div className="card-icon">
-                                📊
-                            </div>
-
-                            <span className="card-arrow">
-                                ↗
-                            </span>
-
-                        </div>
-
-                        <h3>
-                            Analytics
-                        </h3>
-
-                        <p>
-                            View inventory statistics,
-                            expiry information and
-                            category-wise analytics.
-                        </p>
-
-                        <div className="card-bottom">
-
-                            <span>
-                                Open Analytics
-                            </span>
-
-                            <span>
-                                →
-                            </span>
-
-                        </div>
-
-                    </div>
-                                        <div
-                        className="dashboard-card clickable-card"
-                        onClick={() =>
-                            navigate("/reports")
-                        }
-                    >
-
-                        <div className="card-top">
-
-                            <div className="card-icon">
-                                📑
-                            </div>
-
-                            <span className="card-arrow">
-                                ↗
-                            </span>
-
-                        </div>
-
-                        <h3>
-                            Reports
-                        </h3>
-
-                        <p>
-                            View and generate inventory,
-                            stock and expiry reports.
-                        </p>
-
-                        <div className="card-bottom">
-
-                            <span>
-                                Open Reports
-                            </span>
-
-                            <span>
-                                →
-                            </span>
-
-                        </div>
-
-                    </div>
-                    <div
-                        className="dashboard-card clickable-card"
-                        onClick={() =>
-                            navigate("/inventory")
-                        }
-                    >
-
-                        <div className="card-top">
-
-                            <div className="card-icon">
-                                📦
-                            </div>
-
-                            <span className="card-arrow">
-                                ↗
-                            </span>
-
-                        </div>
-
-                        <h3>
-                            Inventory
-                        </h3>
-
-                        <p>
-                            Track stock quantities
-                            and manage medicine
-                            inventory.
-                        </p>
-
-                        <div className="card-bottom">
-                            <span>
-                                Open Inventory
-                            </span>
-
-                            <span>→</span>
-                        </div>
-
-                    </div>
-
-                    <div
-                        className="dashboard-card clickable-card"
-                        onClick={() =>
-                            navigate("/suppliers")
-                        }
-                    >
-
-                        <div className="card-top">
-
-                            <div className="card-icon">
-                                🚚
-                            </div>
-
-                            <span className="card-arrow">
-                                ↗
-                            </span>
-
-                        </div>
-
-                        <h3>
-                            Suppliers
-                        </h3>
-
-                        <p>
-                            Manage supplier
-                            information and
-                            medicine supply records.
-                        </p>
-
-                        <div className="card-bottom">
-                            <span>
-                                Open Suppliers
-                            </span>
-
-                            <span>→</span>
-                        </div>
-
-                    </div>
-
-                    <div
-                        className="dashboard-card clickable-card"
-                        onClick={() =>
-                            navigate("/medicine-search")
-                        }
-                    >
-
-                        <div className="card-top">
-
-                            <div className="card-icon">
-                                🔍
-                            </div>
-
-                            <span className="card-arrow">
-                                ↗
-                            </span>
-
-                        </div>
-
-                        <h3>
-                            Medicine Search
-                        </h3>
-
-                        <p>
-                            Search medicines and
-                            filter by category
-                            and supplier.
-                        </p>
-
-                        <div className="card-bottom">
-                            <span>
-                                Search Medicines
-                            </span>
-
-                            <span>→</span>
-                        </div>
 
                     </div>
 
@@ -792,16 +393,8 @@ function Dashboard() {
                         <span className="status-pulse"></span>
 
                         <div>
-
-                            <strong>
-                                System Connected
-                            </strong>
-
-                            <span>
-                                MediStock inventory
-                                services are active
-                            </span>
-
+                            <strong>System Connected</strong>
+                            <span>MediStock inventory services are active</span>
                         </div>
 
                     </div>
@@ -809,23 +402,17 @@ function Dashboard() {
                     <div className="footer-stats">
 
                         <span>
-                            <strong>
-                                {totalMedicines}
-                            </strong>{" "}
+                            <strong>{totalMedicines}</strong>{" "}
                             Medicines
                         </span>
 
                         <span>
-                            <strong>
-                                {totalStock}
-                            </strong>{" "}
+                            <strong>{totalStock}</strong>{" "}
                             Units
                         </span>
 
                         <span>
-                            <strong>
-                                {lowStock}
-                            </strong>{" "}
+                            <strong>{lowStock}</strong>{" "}
                             Low Stock
                         </span>
 
