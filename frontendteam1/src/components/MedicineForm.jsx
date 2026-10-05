@@ -90,7 +90,7 @@ export default function MedicineForm({
         setSupplierError("");
 
         const response = await axios.get(
-            "http://localhost:8080/api/suppliers",
+            `${import.meta.env.VITE_API_URL}/api/suppliers`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,

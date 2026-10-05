@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import "../styles/MedicineForm.css";
-
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const EMPTY_MEDICINE = {
     medicineName: "",
@@ -139,7 +139,7 @@ export default function MedicineForm({
 
                 const response =
                     await axios.get(
-                        "http://localhost:8080/api/suppliers",
+                        `${API_BASE_URL}/api/suppliers`,
                         {
                             headers: {
                                 Authorization:

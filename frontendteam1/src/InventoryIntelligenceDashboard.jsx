@@ -27,7 +27,7 @@ import {
  * Uses the REAL MediStock medicines API.
  *
  * Backend:
- * GET http://localhost:8080/api/medicines
+ * 
  *
  * No demo/fake data is used.
  */
@@ -37,7 +37,7 @@ import {
 // ------------------------------------------------------------
 
 const API_CONFIG = {
-  baseUrl: "http://localhost:8080/api",
+  baseUrl: `${import.meta.env.VITE_API_URL}/api`,
 
   endpoints: {
     medicines: "/medicines",

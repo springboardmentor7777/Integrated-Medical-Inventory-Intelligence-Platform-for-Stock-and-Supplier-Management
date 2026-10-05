@@ -24,7 +24,7 @@ import {
    ========================================================= */
 
 const API_CONFIG = {
-  baseUrl: "http://localhost:8080/api",
+  baseUrl: `${import.meta.env.VITE_API_URL}/api`,
 
   endpoints: {
     medicines: "/medicines",

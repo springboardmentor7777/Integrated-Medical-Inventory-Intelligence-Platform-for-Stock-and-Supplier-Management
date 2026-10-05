@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 function Analytics() {
   const navigate = useNavigate();
  const { token } = useAuth();
@@ -41,12 +42,12 @@ useEffect(() => {
             };
 
             const summaryResponse = await axios.get(
-                "http://localhost:8080/api/analytics/summary",
+               `${API_BASE_URL}/api/analytics/summary`,
                 { headers }
             );
 
             const categoryResponse = await axios.get(
-                "http://localhost:8080/api/analytics/category-wise",
+                `${API_BASE_URL}/api/analytics/category-wise`,
                 { headers }
             );
 

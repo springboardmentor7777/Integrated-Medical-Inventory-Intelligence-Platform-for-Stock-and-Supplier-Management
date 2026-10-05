@@ -1,6 +1,7 @@
+
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/medicines";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/medicines`;
 
 const authConfig = (token) => ({
   headers: {
@@ -44,4 +45,4 @@ export const deleteMedicine = async (id, token) => {
   );
 
   return response.data;
-};
+}; 
