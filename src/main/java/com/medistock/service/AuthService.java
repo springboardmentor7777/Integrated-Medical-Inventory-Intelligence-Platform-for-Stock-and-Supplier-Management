@@ -40,9 +40,10 @@ public class AuthService {
         }
 
         // Find selected role
+        System.out.println("REGISTER ROLE RECEIVED: [" + request.getRole() + "]");
+
         Role role = roleRepository.findByRoleName(request.getRole())
                 .orElseThrow(() -> new RuntimeException("Role not found"));
-
         // Create new user
         User user = new User();
 
