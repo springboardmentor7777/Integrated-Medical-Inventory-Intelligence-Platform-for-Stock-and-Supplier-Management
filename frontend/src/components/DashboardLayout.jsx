@@ -13,7 +13,7 @@ import NotificationBell from "./notifications/NotificationBell";
 import NotificationPopup from "./notifications/NotificationPopup";
 import { useAuth } from "../context/useAuth";
 
-const DashboardLayout = () => {
+const DashboardLayout = ({ children }) => {
   const { user } = useAuth();
 
   const userName = user?.name || user?.email || "User";
@@ -163,7 +163,7 @@ const DashboardLayout = () => {
           {/* Notification popup */}
           <NotificationPopup />
 
-          <Outlet />
+          {children ?? <Outlet />}
 
         </main>
       </div>
