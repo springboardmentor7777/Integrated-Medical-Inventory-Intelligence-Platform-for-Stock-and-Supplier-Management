@@ -5,7 +5,7 @@ import {
     addStock,
     updateStock
 } from "../services/inventoryService";
-import { getStockLogsByMedicine } from "../services/stockLogService";
+import { getStockLogsByMedicine } from "../services/stocklogService";
 import "../styles/Inventory.css";
 
 function Inventory() {
