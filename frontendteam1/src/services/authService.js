@@ -1,5 +1,5 @@
 import axios from "axios";
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = "https://medistock-backend-w90c.onrender.com";
 const API_URL = `${API_BASE_URL}/api/auth`;
 // Register a new user
 export const registerUser = async (userData) => {
