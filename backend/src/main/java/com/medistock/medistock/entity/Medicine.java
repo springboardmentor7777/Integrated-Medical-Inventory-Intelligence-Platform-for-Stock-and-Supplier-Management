@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Table(name="medicine")
@@ -32,5 +33,11 @@ public class Medicine {
 
     @Column(nullable = false)
     private Integer reorderLevel;
+
+    @Column(name = "batch_number")
+    private String batchNumber;
+
+    @Column(name = "expiry_date")
+    private LocalDate expiryDate;
 
 }

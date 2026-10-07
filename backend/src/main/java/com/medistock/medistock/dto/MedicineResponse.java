@@ -3,6 +3,7 @@ package com.medistock.medistock.dto;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -18,4 +19,6 @@ public class MedicineResponse {
     private String description;
     private BigDecimal price;
     private Integer reorderLevel;
+    private String batchNumber;
+    private LocalDate expiryDate;
 }

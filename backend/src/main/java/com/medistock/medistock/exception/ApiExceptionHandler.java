@@ -28,9 +28,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler({IllegalArgumentException.class, DataIntegrityViolationException.class})
     public ResponseEntity<Map<String, Object>> badRequest(Exception ex) {
-        String message = ex instanceof DataIntegrityViolationException
-                ? "Database constraint violation. Check unique supplier fields."
-                : ex.getMessage();
+        String message = ex.getMessage();
         return response(HttpStatus.BAD_REQUEST, message);
     }
 

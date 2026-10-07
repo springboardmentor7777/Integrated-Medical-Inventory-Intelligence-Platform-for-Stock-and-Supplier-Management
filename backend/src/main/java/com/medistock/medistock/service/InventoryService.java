@@ -8,20 +8,26 @@ import com.medistock.medistock.repository.InventoryRepository;
 import com.medistock.medistock.repository.MedicineRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import com.medistock.medistock.dto.alert.LowStockDetectionRequest;
+import com.medistock.medistock.dto.alert.StockSnapshot;
 
 @Service
 public class InventoryService {
 
     private final InventoryRepository inventoryRepository;
     private final MedicineRepository medicineRepository;
+    private final AlertService alertService;
 
     public InventoryService(
             InventoryRepository inventoryRepository,
-            MedicineRepository medicineRepository) {
+            MedicineRepository medicineRepository,
+            AlertService alertService) {
 
         this.inventoryRepository = inventoryRepository;
         this.medicineRepository = medicineRepository;
+        this.alertService = alertService;
     }
 
     public InventoryResponse createInventory(InventoryRequest request) {
@@ -39,7 +45,18 @@ public class InventoryService {
                 .reorderLevel(medicine.getReorderLevel())
                 .build();
 
-        return mapToResponse(inventoryRepository.save(inventory));
+        Inventory savedInventory = inventoryRepository.save(inventory);
+
+        alertService.detectLowStock(new LowStockDetectionRequest(
+                Collections.singletonList(new StockSnapshot(
+                        medicine.getId(),
+                        medicine.getName(),
+                        savedInventory.getQuantity(),
+                        savedInventory.getReorderLevel()
+                ))
+        ));
+
+        return mapToResponse(savedInventory);
     }
 
     public List<InventoryResponse> getAllInventory() {
@@ -77,7 +94,18 @@ public class InventoryService {
 
         inventory.setQuantity(quantity);
 
-        return mapToResponse(inventoryRepository.save(inventory));
+        Inventory savedInventory = inventoryRepository.save(inventory);
+
+        alertService.detectLowStock(new LowStockDetectionRequest(
+                Collections.singletonList(new StockSnapshot(
+                        savedInventory.getMedicine().getId(),
+                        savedInventory.getMedicine().getName(),
+                        savedInventory.getQuantity(),
+                        savedInventory.getReorderLevel()
+                ))
+        ));
+
+        return mapToResponse(savedInventory);
     }
 
     private InventoryResponse mapToResponse(Inventory inventory) {

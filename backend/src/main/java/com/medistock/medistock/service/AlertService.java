@@ -7,18 +7,24 @@ import com.medistock.medistock.repository.AlertRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.springframework.scheduling.annotation.Scheduled;
+import com.medistock.medistock.entity.Medicine;
+import com.medistock.medistock.dto.alert.AlertRequest;
 
 @Service
 public class AlertService {
 
     private final AlertRepository alertRepository;
+    private final com.medistock.medistock.repository.MedicineRepository medicineRepository;
 
-    public AlertService(AlertRepository alertRepository) {
+    public AlertService(AlertRepository alertRepository, com.medistock.medistock.repository.MedicineRepository medicineRepository) {
         this.alertRepository = alertRepository;
+        this.medicineRepository = medicineRepository;
     }
 
     @Transactional(readOnly = true)
@@ -208,5 +214,60 @@ public class AlertService {
                 a.getCurrentStock(), a.getThresholdStock(), a.getSupplierId(), a.getSupplierName(),
                 a.getActedBy(), a.getCreatedAt(), a.getUpdatedAt(), a.getAcknowledgedAt(), a.getResolvedAt()
         );
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?") // Runs daily at midnight
+    @Transactional
+    public void detectExpiryAlerts() {
+        List<Medicine> allMedicines = medicineRepository.findAll();
+        LocalDate today = LocalDate.now();
+        LocalDate warningDate = today.plusDays(30);
+
+        for (Medicine medicine : allMedicines) {
+            if (medicine.getExpiryDate() == null) continue;
+
+            String referenceKey = "EXPIRY:MEDICINE_ID:" + medicine.getId();
+            Alert existing = alertRepository.findByReferenceKey(referenceKey).orElse(null);
+
+            if (medicine.getExpiryDate().isBefore(today) || medicine.getExpiryDate().isEqual(today)) {
+                // Critical - Expired
+                if (existing == null || existing.getSeverity() != Alert.Severity.CRITICAL) {
+                    saveExpiryAlert(existing, medicine, referenceKey, Alert.Severity.CRITICAL, 
+                            "Medicine Expired: " + medicine.getName(), 
+                            "Medicine " + medicine.getName() + " (Batch: " + medicine.getBatchNumber() + ") has expired on " + medicine.getExpiryDate() + ".");
+                }
+            } else if (medicine.getExpiryDate().isBefore(warningDate)) {
+                // Warning - Expiring Soon
+                if (existing == null) {
+                    saveExpiryAlert(null, medicine, referenceKey, Alert.Severity.WARNING, 
+                            "Medicine Expiring Soon: " + medicine.getName(), 
+                            "Medicine " + medicine.getName() + " (Batch: " + medicine.getBatchNumber() + ") is expiring on " + medicine.getExpiryDate() + ".");
+                }
+            } else {
+                // Safe - Resolve existing alert if any
+                if (existing != null && existing.getStatus() != Alert.Status.RESOLVED) {
+                    existing.setStatus(Alert.Status.RESOLVED);
+                    existing.setResolvedAt(LocalDateTime.now());
+                    existing.setActedBy("AUTO_EXPIRY_RECOVERY");
+                    alertRepository.save(existing);
+                }
+            }
+        }
+    }
+
+    private void saveExpiryAlert(Alert existing, Medicine medicine, String referenceKey, Alert.Severity severity, String title, String message) {
+        Alert alert = existing == null ? new Alert() : existing;
+        alert.setReferenceKey(referenceKey);
+        alert.setType(Alert.Type.EXPIRY);
+        alert.setSeverity(severity);
+        alert.setStatus(Alert.Status.OPEN);
+        alert.setMedicineId(medicine.getId());
+        alert.setMedicineName(medicine.getName().trim());
+        alert.setTitle(title);
+        alert.setMessage(message);
+        alert.setAcknowledgedAt(null);
+        alert.setActedBy(null);
+        alert.setResolvedAt(null);
+        alertRepository.save(alert);
     }
 }

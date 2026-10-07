@@ -26,6 +26,8 @@ public class MedicineService {
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .reorderLevel(request.getReorderLevel())
+                .batchNumber(request.getBatchNumber())
+                .expiryDate(request.getExpiryDate())
                 .build();
 
         return mapToResponse(medicineRepository.save(medicine));
@@ -58,6 +60,8 @@ public class MedicineService {
         medicine.setDescription(request.getDescription());
         medicine.setPrice(request.getPrice());
         medicine.setReorderLevel(request.getReorderLevel());
+        medicine.setBatchNumber(request.getBatchNumber());
+        medicine.setExpiryDate(request.getExpiryDate());
 
         return mapToResponse(medicineRepository.save(medicine));
     }
@@ -90,6 +94,8 @@ public class MedicineService {
                 .description(medicine.getDescription())
                 .price(medicine.getPrice())
                 .reorderLevel(medicine.getReorderLevel())
+                .batchNumber(medicine.getBatchNumber())
+                .expiryDate(medicine.getExpiryDate())
                 .build();
     }
 }
