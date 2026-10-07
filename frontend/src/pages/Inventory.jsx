@@ -189,6 +189,8 @@ const Inventory = () => {
     // ADD INVENTORY
     // =========================
 
+    const [submitting, setSubmitting] = useState(false);
+
     const handleAddInventory = async (e) => {
         e.preventDefault();
 
@@ -212,6 +214,7 @@ const Inventory = () => {
         }
 
         try {
+            setSubmitting(true);
             const response = await authFetch(
                 `${API_URL}/inventory`,
                 {
@@ -260,6 +263,8 @@ const Inventory = () => {
                 error.message ||
                     "Failed to add inventory."
             );
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -578,9 +583,10 @@ const Inventory = () => {
                         <div className="flex items-end">
                             <button
                                 type="submit"
-                                className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                                disabled={submitting}
+                                className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                Add Stock
+                                {submitting ? "Adding..." : "Add Stock"}
                             </button>
                         </div>
                     </form>

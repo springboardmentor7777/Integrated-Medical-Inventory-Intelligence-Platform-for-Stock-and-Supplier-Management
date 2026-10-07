@@ -7,6 +7,7 @@ import {
   Clock3,
   Bell,
   BarChart3,
+  LogOut,
 } from "lucide-react";
 
 import NotificationBell from "./notifications/NotificationBell";
@@ -14,7 +15,7 @@ import NotificationPopup from "./notifications/NotificationPopup";
 import { useAuth } from "../context/useAuth";
 
 const DashboardLayout = ({ children }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const userName = user?.name || user?.email || "User";
 
@@ -150,6 +151,14 @@ const DashboardLayout = ({ children }) => {
                   </p>
                 </div>
 
+                {/* Logout Button */}
+                <button
+                  onClick={logout}
+                  className="ml-4 p-2 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-full transition"
+                  title="Logout"
+                >
+                  <LogOut size={18} />
+                </button>
               </div>
             </div>
           </div>

@@ -8,7 +8,7 @@ const API_URL = "http://localhost:8082/api";
 
 const MedicineDashboard = () => {
 
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
 
     const [medicines, setMedicines] = useState([]);
