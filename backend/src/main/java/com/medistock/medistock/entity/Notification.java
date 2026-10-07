@@ -1,4 +1,4 @@
-package com.pharmacy.system.notification;
+package com.medistock.medistock.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -38,11 +38,9 @@ public class Notification {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // Default constructor required by JPA
     public Notification() {
     }
 
-    // Parameterized constructor without id and createdAt (auto-generated)
     public Notification(Long userId, String targetRole, String type, String title, String message, String channel, String status) {
         this.userId = userId;
         this.targetRole = targetRole;
@@ -55,7 +53,6 @@ public class Notification {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Full parameterized constructor
     public Notification(Long id, Long userId, String targetRole, String type, String title, String message, String channel, String status, boolean isRead, LocalDateTime createdAt) {
         this.id = id;
         this.userId = userId;
@@ -76,7 +73,6 @@ public class Notification {
         }
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

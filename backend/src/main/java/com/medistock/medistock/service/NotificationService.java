@@ -1,5 +1,7 @@
-package com.pharmacy.system.notification;
+package com.medistock.medistock.service;
 
+import com.medistock.medistock.entity.Notification;
+import com.medistock.medistock.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +21,6 @@ public class NotificationService {
         this.notificationRepository = notificationRepository;
     }
 
-    /**
-     * Retrieve notifications for a specific user, role, or both, ordered by createdAt DESC.
-     */
     @Transactional(readOnly = true)
     public List<Notification> getNotifications(Long userId, String targetRole) {
         if (userId != null && targetRole != null) {
@@ -35,9 +34,6 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Get unread notification count for UI badge counters.
-     */
     @Transactional(readOnly = true)
     public long getUnreadCount(Long userId, String targetRole) {
         if (userId != null && targetRole != null) {
@@ -54,9 +50,6 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Create and persist an automated low-stock alert notification.
-     */
     public Notification createLowStockAlert(String medicineName, int currentStock, int threshold, String targetRole) {
         String role = (targetRole != null && !targetRole.trim().isEmpty()) ? targetRole : "PHARMACIST";
         Notification notification = new Notification();
@@ -72,9 +65,6 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    /**
-     * Create and persist an automated medicine expiry alert notification.
-     */
     public Notification createExpiryAlert(String medicineName, String batchNumber, LocalDate expiryDate, String targetRole) {
         String role = (targetRole != null && !targetRole.trim().isEmpty()) ? targetRole : "PHARMACIST";
         Notification notification = new Notification();
@@ -90,9 +80,6 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    /**
-     * Mark an existing notification as read.
-     */
     public Notification markAsRead(Long id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found with ID: " + id));
@@ -100,9 +87,6 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    /**
-     * Create or persist a generic notification.
-     */
     public Notification saveNotification(Notification notification) {
         if (notification.getCreatedAt() == null) {
             notification.setCreatedAt(LocalDateTime.now());

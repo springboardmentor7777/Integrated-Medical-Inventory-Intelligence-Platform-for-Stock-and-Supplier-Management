@@ -1,7 +1,7 @@
-package com.pharmacy.system.controller;
+package com.medistock.medistock.controller;
 
-import com.pharmacy.system.notification.Notification;
-import com.pharmacy.system.notification.NotificationService;
+import com.medistock.medistock.entity.Notification;
+import com.medistock.medistock.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +22,6 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
-    /**
-     * GET /api/notifications
-     * Retrieve notifications filtered by userId, targetRole, or all if no filters provided.
-     */
     @GetMapping
     public ResponseEntity<List<Notification>> getNotifications(
             @RequestParam(required = false) Long userId,
@@ -34,10 +30,6 @@ public class NotificationController {
         return ResponseEntity.ok(notifications);
     }
 
-    /**
-     * GET /api/notifications/unread-count
-     * Retrieve count of unread notifications for UI badge counters.
-     */
     @GetMapping("/unread-count")
     public ResponseEntity<Map<String, Object>> getUnreadCount(
             @RequestParam(required = false) Long userId,
@@ -54,20 +46,12 @@ public class NotificationController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * PATCH /api/notifications/{id}/read
-     * Mark an individual notification as read.
-     */
     @PatchMapping("/{id}/read")
     public ResponseEntity<Notification> markAsRead(@PathVariable Long id) {
         Notification updated = notificationService.markAsRead(id);
         return ResponseEntity.ok(updated);
     }
 
-    /**
-     * POST /api/notifications
-     * Optional endpoint to create custom notification records.
-     */
     @PostMapping
     public ResponseEntity<Notification> createNotification(@RequestBody Notification notification) {
         Notification saved = notificationService.saveNotification(notification);
