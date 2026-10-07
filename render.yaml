@@ -1,0 +1,35 @@
+services:
+  # Spring Boot Backend Web Service
+  - type: web
+    name: medistock-backend
+    env: java
+    plan: free
+    buildCommand: cd backend && ./mvnw clean package -DskipTests
+    startCommand: java -jar backend/target/medistock-backend-1.0.0.jar
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DB_URL
+        sync: false # Set in Render Dashboard (e.g. jdbc:postgresql://ep-xxx.neon.tech/neondb?sslmode=require)
+      - key: DB_USERNAME
+        sync: false # Neon DB user
+      - key: DB_PASSWORD
+        sync: false # Neon DB password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false # Deployed Frontend Render URL
+
+  # React Frontend Static Site
+  - type: static
+    name: medistock-frontend
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false # Deployed Backend Render URL (e.g. https://medistock-backend.onrender.com)

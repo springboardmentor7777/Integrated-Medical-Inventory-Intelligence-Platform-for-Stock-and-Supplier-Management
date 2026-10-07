@@ -79,7 +79,7 @@ src/main/java/com/medistock/
 - **Framework**: Spring Boot 3.2.5
 - **Security**: Spring Security 6 (Stateless JWT Session Management)
 - **Persistence**: Spring Data JPA & Hibernate
-- **Database**: MySQL 8.0 (with H2 in-memory profile for automated tests)
+- **Database**: PostgreSQL / Supabase (with H2 in-memory profile for automated tests)
 - **Token Management**: JJWT (Java JWT `io.jsonwebtoken` 0.12.5)
 - **Password Hashing**: BCrypt
 - **Build Tool**: Apache Maven 3.9+
