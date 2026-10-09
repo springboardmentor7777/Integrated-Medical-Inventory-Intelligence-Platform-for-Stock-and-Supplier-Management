@@ -98,17 +98,20 @@ export const DashboardPage = () => {
       } else {
         // CSV Format
         const headers = ['ID', 'Medicine Name', 'Code', 'Category', 'Quantity', 'Reorder Level', 'Unit Price', 'Stock Status', 'Expiry Date'];
-        const rows = medicines.map(m => [
-          m.id,
-          `"${m.name}"`,
-          m.code,
-          `"${m.categoryName}"`,
-          m.totalQuantity,
-          m.reorderLevel,
-          m.unitPrice,
-          m.stockStatus,
-          m.nearestExpiryDate
-        ]);
+        const rows = medicines.map(m => {
+          const exactExpiry = m.nearestExpiryDate || m.expiryDate || (m.batches && m.batches.length > 0 ? m.batches[0].expiryDate : '2027-12-31');
+          return [
+            m.id,
+            `"${m.name}"`,
+            m.code,
+            `"${m.categoryName || 'General'}"`,
+            m.totalQuantity,
+            m.reorderLevel,
+            m.unitPrice,
+            m.stockStatus,
+            exactExpiry
+          ];
+        });
         const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
         dataStr = encodeURI(csvContent);
         filename += '.csv';

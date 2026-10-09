@@ -1,5 +1,38 @@
+# Maven & Build outputs
+target/
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Runtime Database & lock files
+*.db
+backend/data/*.db
+backend/data/*.lock.db
+backend/data/*.trace.db
+backend/data/
+
+# Node & Frontend dependencies/build
 node_modules/
+**/node_modules/
 dist/
+**/dist/
+.vite/
+
+# Environment and secrets
 .env
+.env.local
+.env.*.local
+
+# Operating System & IDE files
 .DS_Store
+Thumbs.db
 *.log
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
